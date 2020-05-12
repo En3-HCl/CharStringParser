@@ -96,18 +96,34 @@ class OrderSet:
 
         if self.type == OrderType.hhcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
+            handle1dy = 0
+            if len(self.args)%4 == 1:
+                handle1dy = self.args[0].toNumber()
+                self.args.pop(0)
             for i in range(int(len(self.args)/4)):
                 handle1dx = self.args[4*i].toNumber()
+                curPosition = (curPosition[0]+handle1dx, curPosition[1]+handle1dy)
+                self.absolutePositions.append(curPosition)
+
+                handle2dx = self.args[4*i+1].toNumber()
+                handle2dy = self.args[4*i+2].toNumber()
+                curPosition = (curPosition[0]+handle2dx, curPosition[1]+handle2dy)
+                self.absolutePositions.append(curPosition)
+
+                anchorDx = self.args[4*i+3].toNumber()
+                curPosition = (curPosition[0]+anchorDx, curPosition[1])
+                self.absolutePositions.append(curPosition)
+
+                if not handle1dy == 0:
+                    handle1dy = 0
+            self.endPosition = curPosition
 
         self.endPosition = startPosition
 
 from orderType import *
 #          117 116 0 190 -117 116 -116 117 -190 0 -116 -117 -117 -116 0 -190 117 -116 116 -117 190 0 116 117 rrcurveto
-testSet = OrderSet(OrderType.rrcurveto, [
-NumberToken("117"), NumberToken("116"), NumberToken("0"), NumberToken("190"), NumberToken("-117"), NumberToken("116"),
-NumberToken("-116"), NumberToken("117"), NumberToken("-190"), NumberToken("0"), NumberToken("-116"), NumberToken("-117"),
-NumberToken("-117"), NumberToken("-116"), NumberToken("0"), NumberToken("-190"), NumberToken("117"), NumberToken("-116"),
-NumberToken("116"), NumberToken("-117"), NumberToken("190"), NumberToken("0"), NumberToken("116"), NumberToken("117")])
-testSet.setAbsolutePosition((511,145))
+testSet = OrderSet(OrderType.hhcurveto, [
+NumberToken("1"), NumberToken("27"), NumberToken("27"), NumberToken("1"), NumberToken("28")])
+testSet.setAbsolutePosition((0,0))
 print(testSet.absolutePositions)
 print(testSet.endPosition)
