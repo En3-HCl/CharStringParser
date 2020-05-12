@@ -6,14 +6,6 @@ from orderType import *
 #2. トークンの列をオブジェクトの列に変換する。
 #で行う。
 
-##############################################
-class NumberToken:
-    def __init__(self, number):
-        self.value = number
-
-    def toNumber(self):
-        return float(self.value)
-##############################################
 class StringParser:
 
     def __init__(self, string):

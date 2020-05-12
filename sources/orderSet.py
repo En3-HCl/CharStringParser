@@ -26,13 +26,36 @@ class OrderSet:
         self.startPosition = startPosition
         #タイプ毎に読んでいく。
         if self.type == OrderType.rmoveto:
-            self.endPosition = (self.args[0].toNumber(), self.args[1].toNumber())
+            self.absoluteArgs = (self.startPosition[0] + self.args[0].toNumber(), self.startPosition[1] + self.args[1].toNumber())
+            self.endPosition = (self.absoluteArgs[0], self.absoluteArgs[1])
+            return
+
+        if self.type == OrderType.hmoveto:
+            self.absoluteArgs = (self.startPosition[0] + self.args[0].toNumber(), self.startPosition[1])
+            self.endPosition = (self.absoluteArgs[0], self.absoluteArgs[1])
+            return
+        if self.type == OrderType.vmoveto:
+            self.absoluteArgs = (self.startPosition[0], self.startPosition[1] + self.args[0].toNumber())
+            self.endPosition = (self.absoluteArgs[0], self.absoluteArgs[1])
+            return
+
+        if self.type ==  OrderType.rlineto:
+            #引数は偶数個とわかっている
+            curPosition = (self.startPosition[0], self.startPosition[1])
+            for i in range(int(len(self.args)/2)):
+                dx = self.args[2*i].toNumber()
+                dy = self.args[2*i+1].toNumber()
+                curPosition = (curPosition[0]+dx, curPosition[1]+dy)
+                self.absoluteArgs.append(curPosition[0])
+                self.absoluteArgs.append(curPosition[1])
+            self.endPosition = (curPosition[0], curPosition[1])
             return
 
         self.endPosition = startPosition
 
 from orderType import *
 
-testSet = OrderSet(OrderType.rmoveto, [NumberToken("10"),NumberToken("20")])
-testSet.setAbsolutePosition((0,0))
+testSet = OrderSet(OrderType.rlineto, [NumberToken("-402"), NumberToken("-402"), NumberToken("403"), NumberToken("-403"),NumberToken("402"),NumberToken("403"),])
+testSet.setAbsolutePosition((299,707))
+print(testSet.absoluteArgs)
 print(testSet.endPosition)
