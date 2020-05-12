@@ -11,7 +11,6 @@ class OrderSet:
     def __init__(self, type, args):
         self.args = args
         self.type = type
-
         #始点(あとでセットする)
         self.startPosition = (0,0)
         #終点(あとでセットする)
@@ -40,7 +39,7 @@ class OrderSet:
 
         if self.type ==  OrderType.rlineto:
             #引数は偶数個とわかっている
-            curPosition = (self.startPosition[0], self.startPosition[1])
+            curPosition = self.startPosition
             for i in range(int(len(self.args)/2)):
                 dx = self.args[2*i].toNumber()
                 dy = self.args[2*i+1].toNumber()
@@ -51,7 +50,7 @@ class OrderSet:
             return
 
         if self.type == OrderType.hlineto:
-            curPosition = (self.startPosition[0], self.startPosition[1])
+            curPosition = self.startPosition
             #引数の個数とは無関係に、偶数番がdx、奇数番がdyである。
             for i in range(len(self.args)):
                 if i%2 == 0:
@@ -65,7 +64,7 @@ class OrderSet:
             self.endPosition = curPosition
             return
         if self.type == OrderType.vlineto:
-            curPosition = (self.startPosition[0], self.startPosition[1])
+            curPosition = self.startPosition
             #引数の個数とは無関係に、偶数番がdy、奇数番がdyである。
             for i in range(len(self.args)):
                 if i%2 == 1:
@@ -78,11 +77,33 @@ class OrderSet:
                     self.absolutePositions.append(curPosition)
             self.endPosition = curPosition
             return
+
+        if self.type == OrderType.rrcurveto:
+            curPosition = self.startPosition
+            #引数は6個を1セットで読むっぽい。
+            for i in range(int(len(self.args)/6)):
+                handle1dx = self.args[6*i].toNumber()
+                handle1dy = self.args[6*i+1].toNumber()
+                curPosition = (curPosition[0]+handle1dx, curPosition[1]+handle1dy)
+                self.absolutePositions.append(curPosition)
+                handle2dx = self.args[6*i+2].toNumber()
+                handle2dy = self.args[6*i+3].toNumber()
+                curPosition = (curPosition[0]+handle2dx, curPosition[1]+handle2dy)
+                self.absolutePositions.append(curPosition)
+                anchorDx = self.args[6*i+4].toNumber()
+                anchorDy = self.args[6*i+5].toNumber()
+                curPosition = (curPosition[0]+anchorDx, curPosition[1]+anchorDy)
+                self.absolutePositions.append(curPosition)
+            self.endPosition = curPosition
         self.endPosition = startPosition
 
 from orderType import *
-
-testSet = OrderSet(OrderType.vlineto, [NumberToken("-569"), NumberToken("569"), NumberToken("569")])
-testSet.setAbsolutePosition((15,589))
+#          117 116 0 190 -117 116 -116 117 -190 0 -116 -117 -117 -116 0 -190 117 -116 116 -117 190 0 116 117 rrcurveto
+testSet = OrderSet(OrderType.rrcurveto, [
+NumberToken("117"), NumberToken("116"), NumberToken("0"), NumberToken("190"), NumberToken("-117"), NumberToken("116"),
+NumberToken("-116"), NumberToken("117"), NumberToken("-190"), NumberToken("0"), NumberToken("-116"), NumberToken("-117"),
+NumberToken("-117"), NumberToken("-116"), NumberToken("0"), NumberToken("-190"), NumberToken("117"), NumberToken("-116"),
+NumberToken("116"), NumberToken("-117"), NumberToken("190"), NumberToken("0"), NumberToken("116"), NumberToken("117")])
+testSet.setAbsolutePosition((511,145))
 print(testSet.absolutePositions)
 print(testSet.endPosition)
