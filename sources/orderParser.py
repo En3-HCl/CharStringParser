@@ -10,6 +10,9 @@ from orderType import *
 class NumberToken:
     def __init__(self, number):
         self.value = number
+
+    def toNumber(self):
+        return float(self.value)
 ##############################################
 class StringParser:
 
