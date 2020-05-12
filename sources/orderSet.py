@@ -37,9 +37,10 @@ class OrderSet:
             self.endPosition = (self.absolutePositions[0], self.absolutePositions[1])
             return
 
+        #以降よく使うのでcurPositionをここで宣言する。
+        curPosition = self.startPosition
         if self.type ==  OrderType.rlineto:
             #引数は偶数個とわかっている
-            curPosition = self.startPosition
             for i in range(int(len(self.args)/2)):
                 dx = self.args[2*i].toNumber()
                 dy = self.args[2*i+1].toNumber()
@@ -50,7 +51,6 @@ class OrderSet:
             return
 
         if self.type == OrderType.hlineto:
-            curPosition = self.startPosition
             #引数の個数とは無関係に、偶数番がdx、奇数番がdyである。
             for i in range(len(self.args)):
                 if i%2 == 0:
@@ -64,7 +64,6 @@ class OrderSet:
             self.endPosition = curPosition
             return
         if self.type == OrderType.vlineto:
-            curPosition = self.startPosition
             #引数の個数とは無関係に、偶数番がdy、奇数番がdyである。
             for i in range(len(self.args)):
                 if i%2 == 1:
@@ -79,8 +78,7 @@ class OrderSet:
             return
 
         if self.type == OrderType.rrcurveto:
-            curPosition = self.startPosition
-            #引数は6個を1セットで読むっぽい。
+            #引数は6個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
             for i in range(int(len(self.args)/6)):
                 handle1dx = self.args[6*i].toNumber()
                 handle1dy = self.args[6*i+1].toNumber()
@@ -95,6 +93,12 @@ class OrderSet:
                 curPosition = (curPosition[0]+anchorDx, curPosition[1]+anchorDy)
                 self.absolutePositions.append(curPosition)
             self.endPosition = curPosition
+
+        if self.type == OrderType.hhcurveto:
+            #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
+            for i in range(int(len(self.args)/4)):
+                handle1dx = self.args[4*i].toNumber()
+
         self.endPosition = startPosition
 
 from orderType import *
