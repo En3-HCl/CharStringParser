@@ -128,3 +128,4 @@ orderSets = tokensParser.parseTokens()
 
 analyzer = Analyzer(orderSets)
 analyzer.setAbsoluteCoordinate()
+print(analyzer.glyphBoundCalculator())

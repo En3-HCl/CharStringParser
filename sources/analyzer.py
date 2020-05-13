@@ -25,3 +25,17 @@ class Analyzer:
                 order.setAbsolutePosition(curPosition)
                 curPosition = order.endPosition
                 continue
+    def glyphBoundCalculator(self):
+        #!!!必ずsetAbsoluteCoordinateを呼び出してから利用すること!!!
+        #各描画命令の領域値をもらってきて、minX, minY, maxX, maxYをそれぞれ更新していく。
+        minX, minY, maxX, maxY = 0, 0, 0, 0
+        for order in self.orderSets:
+            if order.type.isStemOrder() or order.type.isMaskOrder():
+                continue
+            if order.type.isEndChar():
+                break
+            if order.type.isDrawOrder():
+                order.setBounds()
+                orderMinX, orderMinY, orderMaxX, orderMaxY = order.bounds[0], order.bounds[1], order.bounds[0]+order.bounds[2], order.bounds[1]+order.bounds[3]
+                minX, minY, maxX, maxY = min(minX, orderMinX), min(minY, orderMinY), max(maxX, orderMaxX), max(maxY, orderMaxY)
+        return (minX, minY, maxX, maxY)
