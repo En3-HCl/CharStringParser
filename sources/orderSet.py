@@ -18,10 +18,10 @@ class OrderSet:
         #絶対座標に直した、辿る点を入れる。ハンドルとアンカーは区別せず入れる(暫定)
         self.absolutePositions = []
 
-        #領域の情報(左下頂点x, 左下頂点y, width, height)
+        #領域の情報(minX, minY, maxX, maxY)
         self.bounds = (0, 0, 0, 0)
     def setAbsolutePosition(self, startPosition):
-        if not self.type.isDrawOrder():
+        if not (self.type.isDrawOrder() or self.type.isMoveOrder()):
             return
         #始点を決定する。
         self.startPosition = startPosition
@@ -306,8 +306,15 @@ class OrderSet:
             return
         self.endPosition = startPosition
     def setBounds(self):
-        pass
-
+        if self.type in [OrderType.rlineto, OrderType.hlineto, OrderType.vlineto]:
+            print(self.absolutePositions)
+            #lineTo命令においてはabsolutePositionは全て通過点なので、次の処理で良い。
+            xList = list(map(lambda p:p[0],[self.startPosition]+self.absolutePositions))
+            yList = list(map(lambda p:p[1],[self.startPosition]+self.absolutePositions))
+            minX, maxX = min(xList), max(xList)
+            minY, maxY = min(yList), max(yList)
+            self.bounds = (minX, minY, maxX-minX, maxY-minY)
+            print("return bounds", self.bounds)
 from orderType import *
 #-1 27 -1 28 28 vvcurveto
 #28 7 26 7 25 vhcurveto

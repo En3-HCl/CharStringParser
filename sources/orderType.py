@@ -43,8 +43,10 @@ class OrderType(enum.Enum):
         return self in [OrderType.hstem, OrderType.hstemhm, OrderType.vstem, OrderType.vstemhm]
     def isMaskOrder(self):
         return self in [OrderType.cntrmask, OrderType.hintmask]
+    def isMoveOrder(self):
+        return self in [OrderType.rmoveto, OrderType.hmoveto, OrderType.vmoveto]
     def isDrawOrder(self):
-        return not (self.isStemOrder() or self.isMaskOrder() or self.isEndChar())
+        return not (self.isStemOrder() or self.isMaskOrder() or self.isEndChar() or self.isMoveOrder())
     def isEndChar(self):
         return self == OrderType.endchar
 

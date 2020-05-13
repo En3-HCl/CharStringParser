@@ -1,7 +1,12 @@
 from orderParser import *
 from analyzer import *
+
 orderstring = """
-          20 3 10 2 20 10 20 -10 10 -2 20 flex1
+          -98 805 hstem
+          -103 805 vstem
+          299 707 rmoveto
+          -402 -402 403 -403 402 403 rlineto
+          endchar
           """
 strParser = StringParser(orderstring)
 tokens = strParser.parseString()
@@ -11,4 +16,4 @@ orderSets = tokensParser.parseTokens()
 
 analyzer = Analyzer(orderSets)
 analyzer.setAbsoluteCoordinate()
-print(analyzer.glyphBoundCalculator())
+print("bounds",analyzer.glyphBoundCalculator())
