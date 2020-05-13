@@ -41,10 +41,16 @@ class OrderSet:
         curPosition = self.startPosition
 
         def processCurPosition(curPosition, dx, dy):
+            #absolutePositionの計算まで行う。
             curPosition = (curPosition[0]+dx, curPosition[1]+dy)
             self.absolutePositions.append(curPosition)
             return curPosition
 
+        def reloadCurPosition(curPosition, dx, dy):
+            #後から修正する必要が出た場合にcurPositionを変更し、absolutePositionについても修正する。
+            curPosition = (curPosition[0]+dx, curPosition[1]+dy)
+            self.absolutePositions[-1] = curPosition
+            return curPosition
 
         if self.type ==  OrderType.rlineto:
             #引数は偶数個とわかっている
@@ -168,21 +174,68 @@ class OrderSet:
             if len(self.args)%8 == 1:
                 #このとき最後の1項dyが存在する。
                 dy = self.args[-1].toNumber()
-                curPosition = processCurPosition(curPosition, 0,dy)
+                curPosition = reloadCurPosition(curPosition, 0,dy)
             if len(self.args)%8 == 5:
                 #このとき最後の1項dxが存在する。
                 dx = self.args[-1].toNumber()
-                curPosition = processCurPosition(curPosition, dx,0)
+                curPosition = reloadCurPosition(curPosition, dx,0)
             self.endPosition = curPosition
             return
+
+
+        if self.type == OrderType.vhcurveto:
+            #引数の個数は4+8*n+1? または 8*n+1?である。引数はdy dx dy dx dx dx dy dyを並べたものになるので、それを考慮して処理を簡略化する。
+            #4項ずつ見た場合、偶数番目の4項はdx dx dy dy、奇数番目の4項はdy dx dy dxである。
+            for i in range(int((len(self.args)-len(self.args)%4)/4)):
+                #偶数番目の4項：dy dx dy dx
+                if i%2 == 0:
+                    handle1dy = self.args[4*i].toNumber()
+                    curPosition = processCurPosition(curPosition, 0, handle1dy)
+
+                    handle2dx = self.args[4*i+1].toNumber()
+                    handle2dy = self.args[4*i+2].toNumber()
+                    curPosition = processCurPosition(curPosition, handle2dx, handle2dy)
+
+                    anchorDx = self.args[4*i+3].toNumber()
+                    curPosition = processCurPosition(curPosition, anchorDx, 0)
+                #奇数番目の4項：dx dx dy dy
+                if i%2 == 1:
+                    handle1dx = self.args[4*i].toNumber()
+                    curPosition = processCurPosition(curPosition, handle1dx, 0)
+
+                    handle2dx = self.args[4*i+1].toNumber()
+                    handle2dy = self.args[4*i+2].toNumber()
+                    curPosition = processCurPosition(curPosition, handle2dx, handle2dy)
+
+                    anchorDy = self.args[4*i+3].toNumber()
+                    curPosition = processCurPosition(curPosition, 0, anchorDy)
+
+            if len(self.args)%8 == 1:
+                #このとき最後の1項dxが存在する。
+                dy = self.args[-1].toNumber()
+                curPosition = reloadCurPosition(curPosition, dx, 0)
+            if len(self.args)%8 == 5:
+                #このとき最後の1項dyが存在する。
+                dy = self.args[-1].toNumber()
+                curPosition = reloadCurPosition(curPosition, 0, dy)
+            self.endPosition = curPosition
+            return
+
         self.endPosition = startPosition
 
 from orderType import *
+#-1 27 -1 28 28 vvcurveto
+#28 7 26 7 25 vhcurveto
 testSet0 = OrderSet(OrderType.vvcurveto, [
-NumberToken("-1"), NumberToken("27"), NumberToken("-1"), NumberToken("28"),
- NumberToken("28")
+NumberToken("-1"), NumberToken("27"), NumberToken("-1"), NumberToken("28"), NumberToken("28")
 ])
 testSet0.setAbsolutePosition((88,157))
 
+testSet1 = OrderSet(OrderType.vhcurveto, [
+NumberToken("28"), NumberToken("7"), NumberToken("26"), NumberToken("7"), NumberToken("25")
+])
+testSet1.setAbsolutePosition(testSet0.endPosition)
 print(testSet0.absolutePositions)
 print(testSet0.endPosition)
+
+print(testSet1.absolutePositions)
