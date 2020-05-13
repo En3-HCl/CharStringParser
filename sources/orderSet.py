@@ -259,7 +259,51 @@ class OrderSet:
                 subCurPosition = orderSets[i].endPosition
             self.endPosition = subCurPosition
             return
+        if self.type == OrderType.flex:
+            args = self.args[0:12]
+            order = OrderSet(OrderType.rrcurveto, args)
+            order.setAbsolutePosition(self.startPosition)
+            self.absolutePositions = order.absolutePositions
+            self.endPosition = order.endPosition
+            return
+        if self.type == OrderType.flex1:
+            dx1, dy1 = self.args[0].toNumber(), self.args[1].toNumber()
+            dx2, dy2 = self.args[2].toNumber(), self.args[3].toNumber()
+            dx3, dy3 = self.args[4].toNumber(), self.args[5].toNumber()
+            dx4, dy4 = self.args[6].toNumber(), self.args[7].toNumber()
+            dx5, dy5 = self.args[8].toNumber(), self.args[9].toNumber()
 
+            xSum = abs(dx1+dx2+dx3+dx4+dx5)
+            ySum = abs(dy1+dy2+dy3+dy4+dy5)
+
+            args = []
+            if xSum <= ySum:
+                args = self.args[0:10] + [NumberToken(str(-xSum)), self.args[10]]
+            else:
+                args = self.args[0:10] + [self.args[10], NumberToken(str(-ySum))]
+            order = OrderSet(OrderType.rrcurveto, args)
+            order.setAbsolutePosition(self.startPosition)
+            self.absolutePositions = order.absolutePositions
+            self.endPosition = order.endPosition
+            return
+        if self.type == OrderType.hflex:
+            #  dx1 0 dx2 dy2 dx3 0 dx4 0 dx5 dy2 dx6 50 flex
+            #= dx1 0 dx2 dy2 dx3 0 dx4 0 dx5 dy2 dx6 rrcurveto
+            args = [self.args[0], NumberToken("0"), self.args[1], self.args[2], self.args[3], NumberToken("0"), self.args[4], NumberToken("0"), self.args[5], self.args[2], self.args[6], NumberToken("0")]
+            order = OrderSet(OrderType.rrcurveto, args)
+            order.setAbsolutePosition(self.startPosition)
+            self.absolutePositions = order.absolutePositions
+            self.endPosition = order.endPosition
+            return
+        if self.type == OrderType.hflex1:
+            #dx1 dy1 dx2 dy2 dx3 0 dx4 0 dx5 dy5 dx6 {-(dy1+dy2+dy5)} rrcurveto
+            dy6 = NumberToken(str(-(self.args[1].toNumber() + self.args[3].toNumber() + self.args[7].toNumber())))
+            args = [self.args[0], self.args[1], self.args[2], self.args[3], self.args[4], NumberToken("0"), self.args[5], NumberToken("0"), self.args[6], self.args[7], self.args[8], dy6]
+            order = OrderSet(OrderType.rrcurveto, args)
+            order.setAbsolutePosition(self.startPosition)
+            self.absolutePositions = order.absolutePositions
+            self.endPosition = order.endPosition
+            return
         self.endPosition = startPosition
     def setBounds(self):
         pass

@@ -25,6 +25,8 @@ class Analyzer:
                 order.setAbsolutePosition(curPosition)
                 curPosition = order.endPosition
                 continue
+        print(list(map(lambda x: x.absolutePositions, self.orderSets)))
+
     def glyphBoundCalculator(self):
         #!!!必ずsetAbsoluteCoordinateを呼び出してから利用すること!!!
         #各描画命令の領域値をもらってきて、minX, minY, maxX, maxYをそれぞれ更新していく。
