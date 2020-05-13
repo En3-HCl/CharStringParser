@@ -116,6 +116,28 @@ class OrderSet:
                     handle1dy = 0
             self.endPosition = curPosition
             return
+        if self.type == OrderType.vvcurveto:
+            #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
+            handle1dy = 0
+            if len(self.args)%4 == 1:
+                handle1dx = self.args[0].toNumber()
+                self.args.pop(0)
+            for i in range(int(len(self.args)/4)):
+                handle1dy = self.args[4*i].toNumber()
+                curPosition = processCurPosition(curPosition, handle1dx, handle1dy)
+
+                handle2dx = self.args[4*i+1].toNumber()
+                handle2dy = self.args[4*i+2].toNumber()
+                curPosition = processCurPosition(curPosition, handle2dx, handle2dy)
+
+                anchorDy = self.args[4*i+3].toNumber()
+                curPosition = processCurPosition(curPosition, 0, anchorDy)
+
+                if not handle1dx == 0:
+                    handle1dx = 0
+            self.endPosition = curPosition
+            return
+
         if self.type == OrderType.hvcurveto:
             #引数の個数は4+8*n+1? または 8*n+1?である。引数はdx dx dy dy dy dx dy dxを並べたものになるので、それを考慮して処理を簡略化する。
             #4項ずつ見た場合、偶数番目の4項はdx dx dy dy、奇数番目の4項はdy dx dy dxである。
@@ -156,16 +178,11 @@ class OrderSet:
         self.endPosition = startPosition
 
 from orderType import *
-testSet0 = OrderSet(OrderType.hhcurveto, [
-NumberToken("1"), NumberToken("27"), NumberToken("27"), NumberToken("1"),
+testSet0 = OrderSet(OrderType.vvcurveto, [
+NumberToken("-1"), NumberToken("27"), NumberToken("-1"), NumberToken("28"),
  NumberToken("28")
 ])
-testSet0.setAbsolutePosition((0,0))
+testSet0.setAbsolutePosition((88,157))
 
-testSet1 = OrderSet(OrderType.hvcurveto, [
-NumberToken("28"), NumberToken("26"), NumberToken("-7"), NumberToken("-7"),
- NumberToken("25")
-])
-testSet1.setAbsolutePosition(testSet0.endPosition)
-print(testSet1.absolutePositions)
-print(testSet1.endPosition)
+print(testSet0.absolutePositions)
+print(testSet0.endPosition)
