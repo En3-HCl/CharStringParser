@@ -93,7 +93,7 @@ class OrderSet:
                 curPosition = (curPosition[0]+anchorDx, curPosition[1]+anchorDy)
                 self.absolutePositions.append(curPosition)
             self.endPosition = curPosition
-
+            return
         if self.type == OrderType.hhcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
             handle1dy = 0
@@ -117,13 +117,65 @@ class OrderSet:
                 if not handle1dy == 0:
                     handle1dy = 0
             self.endPosition = curPosition
+            return
+        if self.type == OrderType.hvcurveto:
+            #引数の個数は4+8*n+1? または 8*n+1?である。引数はdx dx dy dy dy dx dy dxを並べたものになるので、それを考慮して処理を簡略化する。
+            #4項ずつ見た場合、偶数番目の4項はdx dx dy dy、奇数番目の4項はdy dx dy dxである。
+            for i in range(int((len(self.args)-len(self.args)%4)/4)):
+                #偶数番目の4項：dx dx dy dy
+                if i%2 == 0:
+                    handle1dx = self.args[4*i].toNumber()
+                    curPosition = (curPosition[0]+handle1dx, curPosition[1])
+                    self.absolutePositions.append(curPosition)
 
+                    handle2dx = self.args[4*i+1].toNumber()
+                    handle2dy = self.args[4*i+2].toNumber()
+                    curPosition = (curPosition[0]+handle2dx, curPosition[1]+handle2dy)
+                    self.absolutePositions.append(curPosition)
+
+                    anchorDy = self.args[4*i+3].toNumber()
+                    curPosition = (curPosition[0], curPosition[1]+anchorDy)
+                    self.absolutePositions.append(curPosition)
+                #奇数番目の4項：dy dx dy dx
+                if i%2 == 1:
+                    handle1dy = self.args[4*i].toNumber()
+                    curPosition = (curPosition[0], curPosition[1]+handle1dy)
+                    self.absolutePositions.append(curPosition)
+
+                    handle2dx = self.args[4*i+1].toNumber()
+                    handle2dy = self.args[4*i+2].toNumber()
+                    curPosition = (curPosition[0]+handle2dx, curPosition[1]+handle2dy)
+                    self.absolutePositions.append(curPosition)
+
+                    anchorDx = self.args[4*i+3].toNumber()
+                    curPosition = (curPosition[0]+anchorDx, curPosition[1])
+                    self.absolutePositions.append(curPosition)
+
+            if len(self.args)%8 == 1:
+                #このとき最後の1項dyが存在する。
+                dy = self.args[-1].toNumber()
+                curPosition = (curPosition[0], curPosition[1]+dy)
+                self.absolutePositions.append(curPosition)
+            if len(self.args)%8 == 5:
+                #このとき最後の1項dxが存在する。
+                dx = self.args[-1].toNumber()
+                curPosition = (curPosition[0]+dx, curPosition[1])
+                self.absolutePositions.append(curPosition)
+            self.endPosition = curPosition
+            return
         self.endPosition = startPosition
 
 from orderType import *
-#          117 116 0 190 -117 116 -116 117 -190 0 -116 -117 -117 -116 0 -190 117 -116 116 -117 190 0 116 117 rrcurveto
-testSet = OrderSet(OrderType.hhcurveto, [
-NumberToken("1"), NumberToken("27"), NumberToken("27"), NumberToken("1"), NumberToken("28")])
-testSet.setAbsolutePosition((0,0))
-print(testSet.absolutePositions)
-print(testSet.endPosition)
+testSet0 = OrderSet(OrderType.hhcurveto, [
+NumberToken("1"), NumberToken("27"), NumberToken("27"), NumberToken("1"),
+ NumberToken("28")
+])
+testSet0.setAbsolutePosition((0,0))
+
+testSet1 = OrderSet(OrderType.hvcurveto, [
+NumberToken("28"), NumberToken("26"), NumberToken("-7"), NumberToken("-7"),
+ NumberToken("25")
+])
+testSet1.setAbsolutePosition(testSet0.endPosition)
+print(testSet1.absolutePositions)
+print(testSet1.endPosition)
