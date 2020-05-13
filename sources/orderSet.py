@@ -39,14 +39,19 @@ class OrderSet:
 
         #以降よく使うのでcurPositionをここで宣言する。
         curPosition = self.startPosition
+
+        def processCurPosition(curPosition, dx, dy):
+            curPosition = (curPosition[0]+dx, curPosition[1]+dy)
+            self.absolutePositions.append(curPosition)
+            return curPosition
+
+
         if self.type ==  OrderType.rlineto:
             #引数は偶数個とわかっている
             for i in range(int(len(self.args)/2)):
                 dx = self.args[2*i].toNumber()
                 dy = self.args[2*i+1].toNumber()
-                curPosition = (curPosition[0]+dx, curPosition[1]+dy)
-                self.absolutePositions.append(curPosition[0])
-                self.absolutePositions.append(curPosition[1])
+                curPosition = processCurPosition(curPosition, dx, dy)
             self.endPosition = (curPosition[0], curPosition[1])
             return
 
@@ -55,12 +60,10 @@ class OrderSet:
             for i in range(len(self.args)):
                 if i%2 == 0:
                     dx = self.args[i].toNumber()
-                    curPosition = (curPosition[0]+dx, curPosition[1])
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, dx, 0)
                 if i%2 == 1:
                     dy = self.args[i].toNumber()
-                    curPosition = (curPosition[0], curPosition[1]+dy)
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, 0, dy)
             self.endPosition = curPosition
             return
         if self.type == OrderType.vlineto:
@@ -68,12 +71,10 @@ class OrderSet:
             for i in range(len(self.args)):
                 if i%2 == 1:
                     dx = self.args[i].toNumber()
-                    curPosition = (curPosition[0]+dx, curPosition[1])
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, dx, 0)
                 if i%2 == 0:
                     dy = self.args[i].toNumber()
-                    curPosition = (curPosition[0], curPosition[1]+dy)
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, 0, dy)
             self.endPosition = curPosition
             return
 
@@ -82,16 +83,16 @@ class OrderSet:
             for i in range(int(len(self.args)/6)):
                 handle1dx = self.args[6*i].toNumber()
                 handle1dy = self.args[6*i+1].toNumber()
-                curPosition = (curPosition[0]+handle1dx, curPosition[1]+handle1dy)
-                self.absolutePositions.append(curPosition)
+                curPosition = processCurPosition(curPosition, handle1dx, handle1dy)
+
                 handle2dx = self.args[6*i+2].toNumber()
                 handle2dy = self.args[6*i+3].toNumber()
-                curPosition = (curPosition[0]+handle2dx, curPosition[1]+handle2dy)
-                self.absolutePositions.append(curPosition)
+                curPosition = processCurPosition(curPosition, handle2dx, handle2dy)
+
                 anchorDx = self.args[6*i+4].toNumber()
                 anchorDy = self.args[6*i+5].toNumber()
-                curPosition = (curPosition[0]+anchorDx, curPosition[1]+anchorDy)
-                self.absolutePositions.append(curPosition)
+                curPosition = processCurPosition(curPosition, anchorDx, anchorDy)
+
             self.endPosition = curPosition
             return
         if self.type == OrderType.hhcurveto:
@@ -102,17 +103,14 @@ class OrderSet:
                 self.args.pop(0)
             for i in range(int(len(self.args)/4)):
                 handle1dx = self.args[4*i].toNumber()
-                curPosition = (curPosition[0]+handle1dx, curPosition[1]+handle1dy)
-                self.absolutePositions.append(curPosition)
+                curPosition = processCurPosition(curPosition, handle1dx, handle1dy)
 
                 handle2dx = self.args[4*i+1].toNumber()
                 handle2dy = self.args[4*i+2].toNumber()
-                curPosition = (curPosition[0]+handle2dx, curPosition[1]+handle2dy)
-                self.absolutePositions.append(curPosition)
+                curPosition = processCurPosition(curPosition, handle2dx, handle2dy)
 
                 anchorDx = self.args[4*i+3].toNumber()
-                curPosition = (curPosition[0]+anchorDx, curPosition[1])
-                self.absolutePositions.append(curPosition)
+                curPosition = processCurPosition(curPosition, anchorDx, 0)
 
                 if not handle1dy == 0:
                     handle1dy = 0
@@ -125,42 +123,34 @@ class OrderSet:
                 #偶数番目の4項：dx dx dy dy
                 if i%2 == 0:
                     handle1dx = self.args[4*i].toNumber()
-                    curPosition = (curPosition[0]+handle1dx, curPosition[1])
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, handle1dx, 0)
 
                     handle2dx = self.args[4*i+1].toNumber()
                     handle2dy = self.args[4*i+2].toNumber()
-                    curPosition = (curPosition[0]+handle2dx, curPosition[1]+handle2dy)
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, handle2dx, handle2dy)
 
                     anchorDy = self.args[4*i+3].toNumber()
-                    curPosition = (curPosition[0], curPosition[1]+anchorDy)
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, 0, anchorDy)
                 #奇数番目の4項：dy dx dy dx
                 if i%2 == 1:
                     handle1dy = self.args[4*i].toNumber()
-                    curPosition = (curPosition[0], curPosition[1]+handle1dy)
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, 0, handle1dy)
 
                     handle2dx = self.args[4*i+1].toNumber()
                     handle2dy = self.args[4*i+2].toNumber()
-                    curPosition = (curPosition[0]+handle2dx, curPosition[1]+handle2dy)
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, handle2dx, handle2dy)
 
                     anchorDx = self.args[4*i+3].toNumber()
-                    curPosition = (curPosition[0]+anchorDx, curPosition[1])
-                    self.absolutePositions.append(curPosition)
+                    curPosition = processCurPosition(curPosition, anchorDx, 0)
 
             if len(self.args)%8 == 1:
                 #このとき最後の1項dyが存在する。
                 dy = self.args[-1].toNumber()
-                curPosition = (curPosition[0], curPosition[1]+dy)
-                self.absolutePositions.append(curPosition)
+                curPosition = processCurPosition(curPosition, 0,dy)
             if len(self.args)%8 == 5:
                 #このとき最後の1項dxが存在する。
                 dx = self.args[-1].toNumber()
-                curPosition = (curPosition[0]+dx, curPosition[1])
-                self.absolutePositions.append(curPosition)
+                curPosition = processCurPosition(curPosition, dx,0)
             self.endPosition = curPosition
             return
         self.endPosition = startPosition
