@@ -221,21 +221,32 @@ class OrderSet:
             self.endPosition = curPosition
             return
 
+        if self.type == OrderType.rcurveline:
+            #rcurvelineはrrcurvetoとrlinetoの合成に等しいというので、教え通りに処理する。
+            linetoArgs = self.args[-2:]
+            orderSets = []
+            #最後の2つを無視して6個ずつ見る。
+            for i in range(int((len(self.args)-len(self.args)%6)/6)):
+                args = self.args[6*i:6*i+6]
+                order = OrderSet(OrderType.rrcurveto, args)
+                orderSets.append(order)
+            orderSets.append(OrderSet(OrderType.rlineto, linetoArgs))
+            subCurPosition = self.startPosition
+            for i in range(len(orderSets)):
+                orderSets[i].setAbsolutePosition(subCurPosition)
+                self.absolutePositions = self.absolutePositions + orderSets[i].absolutePositions
+                subCurPosition = orderSets[i].endPosition
+            self.endPosition = subCurPosition
+            return
         self.endPosition = startPosition
 
 from orderType import *
 #-1 27 -1 28 28 vvcurveto
 #28 7 26 7 25 vhcurveto
-testSet0 = OrderSet(OrderType.vvcurveto, [
-NumberToken("-1"), NumberToken("27"), NumberToken("-1"), NumberToken("28"), NumberToken("28")
-])
-testSet0.setAbsolutePosition((88,157))
+testSet0 = OrderSet(OrderType.rcurveline, [
+NumberToken("-1"), NumberToken("-19"), NumberToken("-2"), NumberToken("-22"), NumberToken("-4"), NumberToken("-27"), NumberToken("-7"), NumberToken("-111"), NumberToken("1"), NumberToken("-112"), NumberToken("9"), NumberToken("-111"), NumberToken("26"), NumberToken("-16")
 
-testSet1 = OrderSet(OrderType.vhcurveto, [
-NumberToken("28"), NumberToken("7"), NumberToken("26"), NumberToken("7"), NumberToken("25")
 ])
-testSet1.setAbsolutePosition(testSet0.endPosition)
+testSet0.setAbsolutePosition((80,422))
 print(testSet0.absolutePositions)
 print(testSet0.endPosition)
-
-print(testSet1.absolutePositions)

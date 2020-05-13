@@ -14,5 +14,5 @@ def makeNumberTokenExpression(list):
         result.append(text)
     return ", ".join(result)
 
-list = [-165, 134, -134, 165, 165, 134, 134, 165, 165, -134, 134, -165, -165, -134, -134, -165]
+list = [-1, -19, -2, -22, -4, -27, -7, -111, 1, -112, 9, -111, 26, -16]
 print(makeNumberTokenExpression(list))
