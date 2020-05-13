@@ -24,5 +24,5 @@ tokensParser = TokenListParser(tokens)
 orderSets = tokensParser.parseTokens()
 
 analyzer = Analyzer(orderSets)
-analyzer.setAbsoluteCoordinate()  //print absolute point list (now incomplete)
+analyzer.setAbsoluteCoordinate()  #print absolute point list (now incomplete)
 ```
