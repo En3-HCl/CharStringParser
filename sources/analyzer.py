@@ -46,3 +46,9 @@ class Analyzer:
                 orderMinX, orderMinY, orderMaxX, orderMaxY = order.bounds[0], order.bounds[1], order.bounds[0]+order.bounds[2], order.bounds[1]+order.bounds[3]
                 minX, minY, maxX, maxY = min(minX, orderMinX), min(minY, orderMinY), max(maxX, orderMaxX), max(maxY, orderMaxY)
         return (minX, minY, maxX-minX, maxY-minY)
+    #全ての描画・移動命令をrmoveto/rlineto/rrcurvetoに直す。そうすると処理がとても楽になって嬉しいと思う。
+    def normalize(self):
+        newOrderSets = []
+        for i in range(len(self.orderSets)):
+            newOrderSets += self.orderSets[i].normalize()
+        return newOrderSets
