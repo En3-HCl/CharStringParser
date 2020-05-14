@@ -42,17 +42,17 @@ class OrderSet:
             #引数の個数とは無関係に、偶数番がdx、奇数番がdyである。
             for i in range(len(self.args)):
                 if i%2 == 0:
-                    args += [self.args[i], NumberToken("0")]
+                    newArgs += [self.args[i], NumberToken("0")]
                 if i%2 == 1:
-                    args += [NumberToken("0"), self.args[i]]
+                    newArgs += [NumberToken("0"), self.args[i]]
             return [OrderSet(OrderType.rlineto, newArgs)]
         if self.type == OrderType.vlineto:
             #引数の個数とは無関係に、偶数番がdx、奇数番がdyである。
             for i in range(len(self.args)):
                 if i%2 == 1:
-                    args += [self.args[i], NumberToken("0")]
+                    newArgs += [self.args[i], NumberToken("0")]
                 if i%2 == 0:
-                    args += [NumberToken("0"), self.args[i]]
+                    newArgs += [NumberToken("0"), self.args[i]]
             return [OrderSet(OrderType.rlineto, newArgs)]
         if self.type == OrderType.hhcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
