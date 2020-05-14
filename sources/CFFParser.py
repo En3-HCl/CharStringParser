@@ -1,4 +1,4 @@
-from orderParser import *
+from charStringParser import *
 from analyzer import *
 from xml.etree import ElementTree
 

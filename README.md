@@ -10,11 +10,11 @@ charstringの詳しい仕様は[仕様書](https://wwwimages.adobe.com/www.adobe
 ```
 ttx -t CFF fontfile.otf
 ```
-を実行すると、fontfile.ttxが出力されます。このfontfile.ttxの拡張子をxmlに変換したうえで、以下のコードを実行してください。
+を実行すると、fontfile.ttxが出力されます。その上で以下のコードを実行してください。
 ```python
 from CFFParser import *
 #絶対パスを指定してCFFParserに読み込ませる。
-parser = CFFParser("fontfile.xml")
+parser = CFFParser("fontfile.ttx")
 #calcGlyphsCubicBoundsメソッドは全てのglyphの枠を計算し、{name: (minX, minY, maxX, maxY)}の形で返す。
 dict = parser.calcGlyphsCubicBounds()
 print(dict)

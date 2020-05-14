@@ -1,5 +1,5 @@
 from fontTools.misc.bezierTools import *
-from orderType import *
+from orderType import OrderType
 class NumberToken:
     def __init__(self, number):
         self.value = number

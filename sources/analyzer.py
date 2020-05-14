@@ -1,6 +1,3 @@
-from orderParser import OrderType
-from orderSet import OrderSet
-
 class Analyzer:
     #飛翔フォントにおける定数
     ascender = 880
