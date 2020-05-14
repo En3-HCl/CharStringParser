@@ -57,5 +57,4 @@ class CFFParser:
         dict = {}
         for key in self.charStringsDict.keys():
             dict[key] = self.calcCubicBounds(key)
-        print(dict)
         return dict
