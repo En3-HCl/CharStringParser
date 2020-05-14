@@ -7,7 +7,7 @@ class Analyzer:
 
     def __init__(self, orderSets):
         self.orderSets = orderSets    #orderSetのリスト
-        
+
     def yMaxCalculator(self):
         hstem = list(filter(lambda x:x.type == OrderType.hstem, self.orders))[0]
         return self.ascender-max(hstem.value)
@@ -23,7 +23,6 @@ class Analyzer:
                 order.setAbsolutePosition(curPosition)
                 curPosition = order.endPosition
                 continue
-        print(list(map(lambda x: x.absolutePositions, self.orderSets)))
 
     def glyphBoundCalculator(self):
         #!!!必ずsetAbsoluteCoordinateを呼び出してから利用すること!!!
@@ -42,6 +41,8 @@ class Analyzer:
                     continue
                 orderMinX, orderMinY, orderMaxX, orderMaxY = order.bounds[0], order.bounds[1], order.bounds[2], order.bounds[3]
                 minX, minY, maxX, maxY = min(minX, orderMinX), min(minY, orderMinY), max(maxX, orderMaxX), max(maxY, orderMaxY)
+        if minX is None:
+            return (0,0,0,0)
         return (minX, minY, maxX, maxY)
     #全ての描画・移動命令をrmoveto/rlineto/rrcurvetoに直す。そうすると処理がとても楽になって嬉しいと思う。
     def normalize(self):
