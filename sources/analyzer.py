@@ -7,9 +7,7 @@ class Analyzer:
 
     def __init__(self, orderSets):
         self.orderSets = orderSets    #orderSetのリスト
-        print(list(map(lambda x:x.type, self.orderSets)))
-        print(list(map(lambda x:list(map(lambda y:y.value,  x.args)), self.orderSets)))
-
+        
     def yMaxCalculator(self):
         hstem = list(filter(lambda x:x.type == OrderType.hstem, self.orders))[0]
         return self.ascender-max(hstem.value)
@@ -29,6 +27,7 @@ class Analyzer:
 
     def glyphBoundCalculator(self):
         #!!!必ずsetAbsoluteCoordinateを呼び出してから利用すること!!!
+        #返り値は (minX, minY, maxX, maxY)
         #各描画命令の領域値をもらってきて、minX, minY, maxX, maxYをそれぞれ更新していく。
         minX, minY, maxX, maxY = None, None, None, None
         for order in self.orderSets:
@@ -38,14 +37,12 @@ class Analyzer:
                 break
             if order.type.isDrawOrder():
                 order.setBounds()
-                print("analyzer",order.type)
-
                 if minX is None:
-                    minX, minY, maxX, maxY = order.bounds[0], order.bounds[1], order.bounds[0]+order.bounds[2], order.bounds[1]+order.bounds[3]
+                    minX, minY, maxX, maxY = order.bounds[0], order.bounds[1], order.bounds[2], order.bounds[3]
                     continue
-                orderMinX, orderMinY, orderMaxX, orderMaxY = order.bounds[0], order.bounds[1], order.bounds[0]+order.bounds[2], order.bounds[1]+order.bounds[3]
+                orderMinX, orderMinY, orderMaxX, orderMaxY = order.bounds[0], order.bounds[1], order.bounds[2], order.bounds[3]
                 minX, minY, maxX, maxY = min(minX, orderMinX), min(minY, orderMinY), max(maxX, orderMaxX), max(maxY, orderMaxY)
-        return (minX, minY, maxX-minX, maxY-minY)
+        return (minX, minY, maxX, maxY)
     #全ての描画・移動命令をrmoveto/rlineto/rrcurvetoに直す。そうすると処理がとても楽になって嬉しいと思う。
     def normalize(self):
         newOrderSets = []

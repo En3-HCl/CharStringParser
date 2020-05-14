@@ -231,23 +231,21 @@ class OrderSet:
             return
 
     def setBounds(self):
+        #(minX, minY, maxX, maxY)を返す
         #normalizeを行ってからsetBoundsを呼ぶこと。
         if self.type == OrderType.rmoveto:
-            self.bounds = (self.startPosition[0], self.startPosition[1], 0, 0)
+            self.bounds = (self.startPosition[0], self.startPosition[1], self.startPosition[0], self.startPosition[1])
         if self.type == OrderType.rlineto:
-            print(self.absolutePositions)
             #lineTo命令においてはabsolutePositionは全て通過点なので、次の処理で良い。
             xList = list(map(lambda p:p[0],[self.startPosition]+self.absolutePositions))
             yList = list(map(lambda p:p[1],[self.startPosition]+self.absolutePositions))
             minX, maxX = min(xList), max(xList)
             minY, maxY = min(yList), max(yList)
-            self.bounds = (minX, minY, maxX-minX, maxY-minY)
-            print("return bounds", self.bounds)
+            self.bounds = (minX, minY, maxX, maxY)
 
         if self.type == OrderType.rrcurveto:
             self.absolutePositions += [self.startPosition] #一時的に末尾に追加するが、のちに消す。この位置にあると都合がいい。
             xList, yList = [], []
-            print("absPositions", self.absolutePositions)
             for i in range(int(len(self.absolutePositions)/3)):
                 anchor1 = self.absolutePositions[3*i-1]
                 handle1 = self.absolutePositions[3*i]
@@ -257,12 +255,6 @@ class OrderSet:
                 xList += [curveBounds[0], curveBounds[2]]
                 yList += [curveBounds[1], curveBounds[3]]
             self.absolutePositions.pop(-1)
-            print(xList, yList)
             minX, maxX = min(xList), max(xList)
             minY, maxY = min(yList), max(yList)
-            self.bounds = (minX, minY, maxX-minX, maxY-minY)
-            print("return bounds", self.bounds)
-print(calcCubicBounds((0, 0), (25, 100), (75,100), (100, 0)))
-print(calcCubicBounds((1, 1), (25, 100), (75,100), (100, 0)))
-print(calcCubicBounds((300, 57), (465, 57), (599,191), (599, 356)))
-print(calcCubicBounds((0, 0), (165, 0), (299,134), (299, 299)))
+            self.bounds = (minX, minY, maxX, maxY)
