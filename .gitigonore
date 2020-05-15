@@ -1,3 +1,2 @@
 *.DS_Store
-/sources/__pycache__/*
-/results/*
+sources/__pycache__/*
