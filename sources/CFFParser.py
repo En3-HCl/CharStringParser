@@ -1,6 +1,7 @@
 from charStringParser import *
 from analyzer import *
 from xml.etree import ElementTree
+import os
 
 class CFFParser:
     def __init__(self, path):
@@ -38,6 +39,7 @@ class CFFParser:
         for child in charstringsXML:
             charStringsDict[child.attrib["name"]] = child.text
         self.charStringsDict = charStringsDict
+        self.extension = "ttx"
     def calcCubicBounds(self,name):
     #指定されたグリフのboundsを(minX, minY, maxX, maxY)の形で返す
         if self.charStringsDict[name] is None:
@@ -64,4 +66,72 @@ class CFFParser:
         dict = {}
         for key in self.charStringsDict.keys():
             dict[key] = self.calcCubicBounds(key)
+        self.glyphBoundsDict = dict
         return dict
+    def makePath(self,name):
+        #nameは拡張子を除いて指定する。拡張子を指定したい場合はCFFParser.extensionに指定する。
+        path = f"./results/{name}.{self.extension}"
+        i = 1
+        while os.path.isfile(path):
+            path = f"./results/{name}#{i}.{self.extension}"
+            i += 1
+        return path
+
+    def writeFile(self, path, text):
+        with open(path, mode='a') as file:
+            file.write(text)
+
+    def get_vmtx_and_vhea_table(self):
+    #vmtxテーブルとvheaテーブルを生成する
+        vmtxPath = self.makePath("vmtx")
+        vheaPath = self.makePath("vhea")
+        mintsb = self.ascender
+        minbsb = -self.descender
+        maxYMaxEx = 0
+        glyphsCount = len(self.glyphBoundsDict)
+        root = """<?xml version="1.0" encoding="UTF-8"?>
+<ttFont sfntVersion="OTTO" ttLibVersion="3.9">
+        """
+        self.writeFile(vmtxPath, root)
+
+        self.writeFile(vmtxPath, "\n<vmtx>")
+
+        for key in self.glyphBoundsDict.keys():
+            yMin = round(self.glyphBoundsDict[key][1])
+            yMax = round(self.glyphBoundsDict[key][3])
+            tsb = self.ascender - yMax  #ascender - yMax
+            bsb = yMin - self.descender #yMin - descender
+            yMaxEx = tsb + (yMax - yMin)
+            mintsb = min(tsb,mintsb)
+            minbsb = min(bsb,minbsb)
+            maxYMaxEx = max(yMaxEx, maxYMaxEx)
+
+            element = f'\n<mtx name="{key}" height="{self.height}" tsb="{tsb}"/>'
+            self.writeFile(vmtxPath, element)
+        self.writeFile(vmtxPath,"\n</vmtx>")
+        self.writeFile(vmtxPath,"\n</ttFont>")
+
+        self.writeFile(vheaPath, root)
+        vhea = f"""
+    <vhea>
+    <tableVersion value="0x00011000"/>
+    <ascent value="{self.vheaAscent}"/>
+    <descent value="{self.vheaDescent}"/>
+    <lineGap value="0"/>
+    <advanceHeightMax value="{self.height}"/>
+    <minTopSideBearing value="{mintsb}"/>
+    <minBottomSideBearing value="{minbsb}"/>
+    <yMaxExtent value="{maxYMaxEx}"/>
+    <caretSlopeRise value="0"/>
+    <caretSlopeRun value="1"/>
+    <caretOffset value="0"/>
+    <reserved1 value="0"/>
+    <reserved2 value="0"/>
+    <reserved3 value="0"/>
+    <reserved4 value="0"/>
+    <metricDataFormat value="0"/>
+    <numberOfVMetrics value="1"/>
+    </vhea>
+        """
+        self.writeFile(vheaPath, vhea)
+        self.writeFile(vheaPath,"\n</ttFont>")
