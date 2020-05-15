@@ -6,10 +6,15 @@ class CFFParser:
     def __init__(self, path):
         self.cffString = str
         root = ElementTree.parse(path).getroot()
-        cffXML = root[0]
-        if cffXML.tag != "CFF":
+        cffXML = None
+        for child in root:
+            if child.tag == "CFF":
+                cffXML = child
+                break
+        if cffXML is None:
             print("有効なファイルではありません")
             return
+
         cffFontXML = None
         for child in cffXML:
             if child.tag == "CFFFont":
@@ -18,6 +23,7 @@ class CFFParser:
         if cffFontXML is None:
             print("CFFFontテーブルが見つかりませんでした")
             return
+
         charstringsXML = None
         for child in cffFontXML:
             if child.tag == "CharStrings":
@@ -26,6 +32,7 @@ class CFFParser:
         if charstringsXML is None:
             print("CharStringsテーブルが見つかりませんでした")
             return
+
         #CharStringを格納するコード。
         charStringsDict = {}
         for child in charstringsXML:
