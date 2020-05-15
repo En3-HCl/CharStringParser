@@ -82,13 +82,16 @@ class CFFParser:
             file.write(text)
 
     def get_vmtx_and_vhea_table(self):
+        glyphsCount = len(self.glyphBoundsDict)
+        if glyphsCount == 0:
+            self.calcCubicBounds()
+        glyphsCount = len(self.glyphBoundsDict)
     #vmtxテーブルとvheaテーブルを生成する
         vmtxPath = self.makePath("vmtx")
         vheaPath = self.makePath("vhea")
         mintsb = self.ascender
         minbsb = -self.descender
         maxYMaxEx = 0
-        glyphsCount = len(self.glyphBoundsDict)
         root = """<?xml version="1.0" encoding="UTF-8"?>
 <ttFont sfntVersion="OTTO" ttLibVersion="3.9">
         """

@@ -2,6 +2,7 @@ from CFFParser import *
 #絶対パスを指定してCFFParserに読み込ませる。
 parser = CFFParser("cff.xml")
 #calcGlyphsCubicBoundsメソッドは全てのglyphの枠を計算し、{name: (minX, minY, maxX, maxY)}の形で返す。
+
 dict = parser.calcGlyphsCubicBounds()
 parser.extension = "ttx"        #デフォルトではttxとなっている
 #フォントの構造に関する情報を与える
