@@ -8,9 +8,18 @@ charstringの詳しい仕様は[仕様書](https://wwwimages.adobe.com/www.adobe
 ## 使い方
 コマンドラインにおいて
 ```
+ttx fontfile.otf
+```
+または
+```
 ttx -t CFF fontfile.otf
 ```
-を実行すると、fontfile.ttxが出力されます。その上で以下のコードを実行してください。
+を実行すると、fontfile.ttxが出力されます。後者のコマンドはCFFテーブルのみを出力するので効率は後者の方が良くなります。
+
+その上で以下のコードを実行してください。
+
+⚠️現在下記コードはCharStringParser/Souces/においてpython3を実行した場合のみ動作します。対処法は検討中です。
+
 ```python
 from CFFParser import *
 #絶対パスを指定してCFFParserに読み込ませる。
