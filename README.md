@@ -26,5 +26,16 @@ from CFFParser import *
 parser = CFFParser("fontfile.ttx")
 #calcGlyphsCubicBoundsメソッドは全てのglyphの枠を計算し、{name: (minX, minY, maxX, maxY)}の形で返す。
 dict = parser.calcGlyphsCubicBounds()
-print(dict)
+parser.extension = "ttx"        #デフォルトではttxとなっているので必須ではない
+
+#フォントの構造に関する情報を与える
+parser.ascender = 880
+parser.descender = -120 #descenderは負の数値で指定すること
+parser.height = 1000
+
+parser.vheaAscent = 512
+parser.vheaDescent = -512
+
+#vmtxとvheaのttxファイルをcharstring/resultsに出力する
+parser.get_vmtx_and_vhea_table()
 ```
