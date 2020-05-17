@@ -1,5 +1,5 @@
 from charStringParser import *
-from analyzer import *
+from charStringAnalyzer import *
 from xml.etree import ElementTree
 import os
 
@@ -53,7 +53,7 @@ class CFFParser:
         tokensParser = TokenListParser(tokens)
         orderSets = tokensParser.parseTokens()
         #命令を分析するAnalyzerを作成する
-        analyzer = Analyzer(orderSets)
+        analyzer = CharStringAnalyzer(orderSets)
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する
         normalizedAnalyzer = Analyzer(analyzer.normalize())
         #絶対座標を計算する
