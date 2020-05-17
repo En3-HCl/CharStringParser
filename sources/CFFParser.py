@@ -55,7 +55,7 @@ class CFFParser:
         #命令を分析するAnalyzerを作成する
         analyzer = CharStringAnalyzer(orderSets)
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する
-        normalizedAnalyzer = Analyzer(analyzer.normalize())
+        normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize())
         #絶対座標を計算する
         normalizedAnalyzer.setAbsoluteCoordinate()
         #グリフの領域を計算し、(minX, minY, maxX, maxY)を表示する
@@ -70,14 +70,18 @@ class CFFParser:
         return dict
     def makePath(self,name):
         #nameは拡張子を除いて指定する。拡張子を指定したい場合はCFFParser.extensionに指定する。
-        path = f"./results/{name}.{self.extension}"
+        path = f"../results/{name}.{self.extension}"
         i = 1
         while os.path.isfile(path):
-            path = f"./results/{name}#{i}.{self.extension}"
+            path = f"../results/{name}#{i}.{self.extension}"
             i += 1
         return path
 
     def writeFile(self, path, text):
+        if not os.path.isfile(path):
+            with open(path, mode='w') as file:
+                file.write(text)
+                return
         with open(path, mode='a') as file:
             file.write(text)
 

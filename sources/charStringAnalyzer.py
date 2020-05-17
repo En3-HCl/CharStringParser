@@ -1,4 +1,4 @@
-class Analyzer:
+class CharStringAnalyzer:
     #飛翔フォントにおける定数
     ascender = 880
 

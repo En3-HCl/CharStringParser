@@ -1,5 +1,5 @@
-from orderSet import *
-from orderType import *
+from charStringOrderSet import *
+from charStringOrderType import *
 #charstringをパースする
 #流れは
 #1. 文字列を数値と命令のトークンの列に変換する。
@@ -60,7 +60,7 @@ class StringParser:
         while True:
             self.next()
             if self.curChar in ["last", " ", "\n"]:
-                order = OrderType.getOrder(identifier)
+                order = CharStringOrderType.getOrder(identifier)
                 self.result.append(order)
                 return
             identifier = identifier + self.curChar
@@ -110,25 +110,25 @@ class TokenListParser:
                 continue
             if self.curToken.isUniquefix():
                 #後置命令だが直後のvstemは記述されないため、vstemの分までパースする。
-                if self.curToken == OrderType.hstemhm:
-                    hstem = OrderSet(OrderType.hstem, self.stack)
+                if self.curToken == CharStringOrderType.hstemhm:
+                    hstem = OrderSet(CharStringOrderType.hstem, self.stack)
                     orders.append(hstem)
 
                     self.next()
                     self.parseNumberTokens()
-                    vstem = OrderSet(OrderType.vstem, self.stack)
+                    vstem = OrderSet(CharStringOrderType.vstem, self.stack)
                     orders.append(vstem)
                     continue
                 #endcharが出てきた場合終了
-                if self.curToken == OrderType.endchar:
-                    orders.append(OrderSet(OrderType.endchar, []))
+                if self.curToken == CharStringOrderType.endchar:
+                    orders.append(OrderSet(CharStringOrderType.endchar, []))
                     return orders
                 continue
             #前置命令のため、命令が来てから数値列をパースする。
             if self.curToken.isPrefix():
                 self.next()
                 self.parseNumberTokens(1)
-                order = OrderSet(OrderType.hintmask, self.stack)
+                order = OrderSet(CharStringOrderType.hintmask, self.stack)
                 orders.append(order)
                 continue
             #次のトークンを呼び出す。

@@ -1,6 +1,6 @@
 import enum
 
-class OrderType(enum.Enum):
+class CharStringOrderType(enum.Enum):
     hstem = "hstem"
     vstem = "vstem"
 
@@ -33,96 +33,96 @@ class OrderType(enum.Enum):
     endchar = "endchar"
 
     def isUniquefix(self):
-        return self in [OrderType.hstemhm, OrderType.endchar]
+        return self in [CharStringOrderType.hstemhm, CharStringOrderType.endchar]
     def isPrefix(self):
-        return self in [OrderType.hintmask, OrderType.cntrmask]
+        return self in [CharStringOrderType.hintmask, CharStringOrderType.cntrmask]
     def isPostfix(self):
         return not (self.isUniquefix() or self.isPrefix())
 
     def isStemOrder(self):
-        return self in [OrderType.hstem, OrderType.hstemhm, OrderType.vstem, OrderType.vstemhm]
+        return self in [CharStringOrderType.hstem, CharStringOrderType.hstemhm, CharStringOrderType.vstem, CharStringOrderType.vstemhm]
     def isMaskOrder(self):
-        return self in [OrderType.cntrmask, OrderType.hintmask]
+        return self in [CharStringOrderType.cntrmask, CharStringOrderType.hintmask]
     def isMoveOrder(self):
-        return self in [OrderType.rmoveto, OrderType.hmoveto, OrderType.vmoveto]
+        return self in [CharStringOrderType.rmoveto, CharStringOrderType.hmoveto, CharStringOrderType.vmoveto]
     def isDrawOrder(self):
         return not (self.isStemOrder() or self.isMaskOrder() or self.isEndChar() or self.isMoveOrder())
     def isEndChar(self):
-        return self == OrderType.endchar
+        return self == CharStringOrderType.endchar
 
 
     def getOrder(orderString):
         if orderString == "hstem":
-            return OrderType.hstem
+            return CharStringOrderType.hstem
 
         if orderString == "vstem":
-            return OrderType.vstem
+            return CharStringOrderType.vstem
 
         if orderString == "hstemhm":
-            return OrderType.hstemhm
+            return CharStringOrderType.hstemhm
 
         if orderString == "vstemhm":
-            return OrderType.vstemhm
+            return CharStringOrderType.vstemhm
 
         if orderString == "hintmask":
-            return OrderType.hintmask
+            return CharStringOrderType.hintmask
 
         if orderString == "rmoveto":
-            return OrderType.rmoveto
+            return CharStringOrderType.rmoveto
 
         if orderString == "hvcurveto":
-            return OrderType.hvcurveto
+            return CharStringOrderType.hvcurveto
 
         if orderString == "hmoveto":
-            return OrderType.hmoveto
+            return CharStringOrderType.hmoveto
 
         if orderString == "vmoveto":
-            return OrderType.vmoveto
+            return CharStringOrderType.vmoveto
 
         if orderString == "rlineto":
-            return OrderType.rlineto
+            return CharStringOrderType.rlineto
 
         if orderString == "hlineto":
-            return OrderType.hlineto
+            return CharStringOrderType.hlineto
 
         if orderString == "vlineto":
-            return OrderType.vlineto
+            return CharStringOrderType.vlineto
 
         if orderString == "rrcurveto":
-            return OrderType.rrcurveto
+            return CharStringOrderType.rrcurveto
 
         if orderString == "hvcurveto":
-            return OrderType.hvcurveto
+            return CharStringOrderType.hvcurveto
 
         if orderString == "hhcurveto":
-            return OrderType.hhcurveto
+            return CharStringOrderType.hhcurveto
 
         if orderString == "rcurveline":
-            return OrderType.rcurveline
+            return CharStringOrderType.rcurveline
 
         if orderString == "rlinecurve":
-            return OrderType.rlinecurve
+            return CharStringOrderType.rlinecurve
 
         if orderString == "vhcurveto":
-            return OrderType.vhcurveto
+            return CharStringOrderType.vhcurveto
 
         if orderString == "vvcurveto":
-            return OrderType.vvcurveto
+            return CharStringOrderType.vvcurveto
 
         if orderString == "flex1":
-            return OrderType.flex1
+            return CharStringOrderType.flex1
 
         if orderString == "hflex1":
-            return OrderType.hflex1
+            return CharStringOrderType.hflex1
 
         if orderString == "hflex":
-            return OrderType.hflex
+            return CharStringOrderType.hflex
 
         if orderString == "flex":
-            return OrderType.flex
+            return CharStringOrderType.flex
 
         if orderString == "endchar":
-            return OrderType.endchar
+            return CharStringOrderType.endchar
 
         if orderString == "cntrmask":
-            return OrderType.cntrmask
+            return CharStringOrderType.cntrmask
