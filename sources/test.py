@@ -1,6 +1,6 @@
 from CFFParser import *
 #絶対パスを指定してCFFParserに読み込ませる。
-parser = CFFParser("/Users/en3_hcl_k/Desktop/CharStringTest-Regular.ttx")
+parser = CFFParser("cff.ttx")
 #calcGlyphsCubicBoundsメソッドは全てのglyphの枠を計算し、{name: (minX, minY, maxX, maxY)}の形で返す。
 
 dict = parser.calcGlyphsCubicBounds()
