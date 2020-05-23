@@ -5,8 +5,13 @@ import os
 
 class CFFParser:
     def __init__(self, path):
+        #初期化
+        self.extension = "ttx"
+
         self.cffString = str
         root = ElementTree.parse(path).getroot()
+
+        #CharStringの文字列をそれぞれのグリフに対して抜き出す
         cffXML = None
         for child in root:
             if child.tag == "CFF":
@@ -34,12 +39,62 @@ class CFFParser:
             print("CharStringsテーブルが見つかりませんでした")
             return
 
-        #CharStringを格納するコード。
+        #CharStringを格納するdict。
         charStringsDict = {}
         for child in charstringsXML:
             charStringsDict[child.attrib["name"]] = child.text
         self.charStringsDict = charStringsDict
-        self.extension = "ttx"
+
+        #次にsubrを取り出す。
+        subrCharStringDict = {}
+
+        privateXML = None
+        for child in cffFontXML:
+            if child.tag == "Private":
+                privateXML = child
+                break
+        if privateXML is None:
+            print("Privateテーブルが見つかりませんでした")
+            return
+
+        subrsXML = None
+        self.hasSubroutine = False
+        for child in privateXML:
+            if child.tag == "Subrs":
+                subrsXML = child
+                break
+        if subrsXML is None:
+            print("Subroutineは存在しません")
+        else:
+            self.hasSubroutine = True
+
+        if self.hasSubroutine:
+            for child in subrsXML:
+                subrCharStringDict[int(child.attrib["index"])] = child.text
+        self.subrCharStringDict = subrCharStringDict
+        self.subrCount = len(subrCharStringDict)
+
+        #次にgsubrを取り出す。
+        gsubrCharStringDict = {}
+
+        globalSubrsXML = None
+        self.hasGlobalSubroutine = False
+
+        for child in cffXML:
+            if child.tag == "GlobalSubrs":
+                globalSubrsXML = child
+                break
+        if globalSubrsXML is None:
+            print("Global Subroutineは存在しません")
+        else:
+            self.hasGlobalSubroutine = True
+
+        if self.hasGlobalSubroutine:
+            for child in globalSubrsXML:
+                subrCharStringDict[int(child.attrib["index"])] = child.text
+        self.gsubrCharStringDict = gsubrCharStringDict
+        self.gsubrCount = len(gsubrCharStringDict)
+
     def calcCubicBounds(self,name):
     #指定されたグリフのboundsを(minX, minY, maxX, maxY)の形で返す
         if self.charStringsDict[name] is None:
