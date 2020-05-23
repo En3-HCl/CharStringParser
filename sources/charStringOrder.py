@@ -194,13 +194,21 @@ class CharStringOrder:
             return [CharStringOrder(CharStringOrderType.rrcurveto, args)]
 
     def setAbsolutePosition(self, startPosition):
+        """
+        args:
+         - startPosition: absolute (x, y)
+        process:
+         - initialize `absolutePosition`
+         return: None
+        """
         if not (self.type.isDrawOrder() or self.type.isMoveOrder()):
             return
         #始点を決定する。
         self.startPosition = startPosition
         #タイプ毎に読んでいく。
         if self.type == CharStringOrderType.rmoveto:
-            self.absolutePositions = (self.startPosition[0] + self.args[0].toNumber(), self.startPosition[1] + self.args[1].toNumber())
+            #stack clearであることから、rmoveto命令が最後の2つを読むようにするためインデックスを-2, -1とした。
+            self.absolutePositions = (self.startPosition[0] + self.args[-2].toNumber(), self.startPosition[1] + self.args[-1].toNumber())
             self.endPosition = (self.absolutePositions[0], self.absolutePositions[1])
             return
         #以降よく使うのでcurPositionをここで宣言する。
@@ -241,8 +249,7 @@ class CharStringOrder:
 
     def getBounds(self):
         """
-        args:
-         - None
+        args: None
         return:
          - (minX, minY, maxX, maxY)
         """
@@ -268,7 +275,7 @@ class CharStringOrder:
                 curveBounds = calcCubicBounds(anchor1,handle1,handle2,anchor2)
                 xList += [curveBounds[0], curveBounds[2]]
                 yList += [curveBounds[1], curveBounds[3]]
-            self.absolutePositions.pop(-1)
+            self.absolutePositions.pop(-1)                 #消した
             minX, maxX = min(xList), max(xList)
             minY, maxY = min(yList), max(yList)
             return (minX, minY, maxX, maxY)
