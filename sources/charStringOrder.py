@@ -26,8 +26,6 @@ class CharStringOrder:
         """
         args:
          - None
-        process:
-         - damage `args`
         return:
          - equivalent CharStringOrder expressed by `rmoveto` `rlineto` `rrcurveto`
         """
@@ -61,16 +59,20 @@ class CharStringOrder:
                 if i%2 == 0:
                     newArgs += [NumberToken.zero, self.args[i]]
             return [CharStringOrder(CharStringOrderType.rlineto, newArgs)]
+
+        #argsに手を加えたいので、加える前にコピーを取って作業する。
+        _args = list(map(lambda x: x, self.args))
+
         if self.type == CharStringOrderType.hhcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
             handle1dy = NumberToken.zero
-            if len(self.args)%4 == 1:
-                handle1dy = self.args[0]
-                self.args.pop(0)
-            for i in range(int(len(self.args)/4)):
-                handle1dx = self.args[4*i]
-                handle2dx, handle2dy = self.args[4*i+1], self.args[4*i+2]
-                anchorDx, anchorDy = self.args[4*i+3], NumberToken.zero
+            if len(_args)%4 == 1:
+                handle1dy = _args[0]
+                _args.pop(0)
+            for i in range(int(len(_args)/4)):
+                handle1dx = _args[4*i]
+                handle2dx, handle2dy = _args[4*i+1], _args[4*i+2]
+                anchorDx, anchorDy = _args[4*i+3], NumberToken.zero
 
                 newArgs += [handle1dx, handle1dy] + [handle2dx, handle2dy] + [anchorDx, anchorDy]
 
@@ -80,13 +82,13 @@ class CharStringOrder:
         if self.type == CharStringOrderType.vvcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
             handle1dx = NumberToken.zero
-            if len(self.args)%4 == 1:
-                handle1dx = self.args[0]
-                self.args.pop(0)
-            for i in range(int(len(self.args)/4)):
-                handle1dy = self.args[4*i]
-                handle2dx, handle2dy = self.args[4*i+1], self.args[4*i+2]
-                anchorDx, anchorDy = NumberToken.zero, self.args[4*i+3]
+            if len(_args)%4 == 1:
+                handle1dx = _args[0]
+                _args.pop(0)
+            for i in range(int(len(_args)/4)):
+                handle1dy = _args[4*i]
+                handle2dx, handle2dy = _args[4*i+1], _args[4*i+2]
+                anchorDx, anchorDy = NumberToken.zero, _args[4*i+3]
 
                 newArgs += [handle1dx, handle1dy] + [handle2dx, handle2dy] + [anchorDx, anchorDy]
 
