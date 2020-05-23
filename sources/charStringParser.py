@@ -119,9 +119,9 @@ class TokenListParser:
                     vstem = OrderSet(CharStringOrderType.vstem, self.stack)
                     orders.append(vstem)
                     continue
-                #endcharが出てきた場合終了
-                if self.curToken == CharStringOrderType.endchar:
-                    orders.append(OrderSet(CharStringOrderType.endchar, []))
+                #endchar/returnが出てきた場合終了
+                if self.curToken.isEndOrder():
+                    orders.append(OrderSet(self.curToken, []))
                     return orders
                 continue
             #前置命令のため、命令が来てから数値列をパースする。

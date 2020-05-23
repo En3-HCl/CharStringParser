@@ -30,10 +30,14 @@ class CharStringOrderType(enum.Enum):
     hflex1 = "hflex1"
     flex1 = "flex1"
 
+    callsubr = "callsubr"
+    callgsubr = "callgsubr"
+
     endchar = "endchar"
+    _return = "return"
 
     def isUniquefix(self):
-        return self in [CharStringOrderType.hstemhm, CharStringOrderType.endchar]
+        return self in [CharStringOrderType.hstemhm, CharStringOrderType.endchar, CharStringOrderType._return]
     def isPrefix(self):
         return self in [CharStringOrderType.hintmask, CharStringOrderType.cntrmask]
     def isPostfix(self):
@@ -46,9 +50,9 @@ class CharStringOrderType(enum.Enum):
     def isMoveOrder(self):
         return self in [CharStringOrderType.rmoveto, CharStringOrderType.hmoveto, CharStringOrderType.vmoveto]
     def isDrawOrder(self):
-        return not (self.isStemOrder() or self.isMaskOrder() or self.isEndChar() or self.isMoveOrder())
-    def isEndChar(self):
-        return self == CharStringOrderType.endchar
+        return not (self.isStemOrder() or self.isMaskOrder() or self.isEndOrder() or self.isMoveOrder())
+    def isEndOrder(self):
+        return self in [CharStringOrderType.endchar, CharStringOrderType._return]
 
 
     def getOrder(orderString):
@@ -66,6 +70,9 @@ class CharStringOrderType(enum.Enum):
 
         if orderString == "hintmask":
             return CharStringOrderType.hintmask
+
+        if orderString == "cntrmask":
+            return CharStringOrderType.cntrmask
 
         if orderString == "rmoveto":
             return CharStringOrderType.rmoveto
@@ -121,8 +128,14 @@ class CharStringOrderType(enum.Enum):
         if orderString == "flex":
             return CharStringOrderType.flex
 
+        if orderString == "callsubr":
+            return CharStringOrderType.callsubr
+
+        if orderString == "callgsubr":
+            return CharStringOrderType.callgsubr
+
         if orderString == "endchar":
             return CharStringOrderType.endchar
 
-        if orderString == "cntrmask":
-            return CharStringOrderType.cntrmask
+        if orderString == "return":
+            return CharStringOrderType._return

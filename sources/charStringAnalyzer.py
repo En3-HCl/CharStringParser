@@ -14,7 +14,7 @@ class CharStringAnalyzer:
         for order in self.orderSets:
             if order.type.isStemOrder() or order.type.isMaskOrder():
                 continue
-            if order.type.isEndChar():
+            if order.type.isEndOrder():
                 break
             if order.type.isDrawOrder() or order.type.isMoveOrder():
                 order.setAbsolutePosition(curPosition)
@@ -29,7 +29,7 @@ class CharStringAnalyzer:
         for order in self.orderSets:
             if order.type.isStemOrder() or order.type.isMaskOrder() or order.type.isMoveOrder():
                 continue
-            if order.type.isEndChar():
+            if order.type.isEndOrder():
                 break
             if order.type.isDrawOrder():
                 order.setBounds()
