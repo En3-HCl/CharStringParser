@@ -161,12 +161,14 @@ class CFFParser:
         self.gsubrCharStringDict = gsubrCharStringDict
         self.gsubrCount = len(gsubrCharStringDict)
 
-    def parseAllSubrs(self):
-        """
-        args: None
-        process: parse subrs' CharString to [CharstringOrder] and expands all `callsubr` and `callgsubr`, then set them `self.(g)subrOrdersDict`
-        """
-        pass
+    #サブルーティンの処理について
+    """
+    CharStringAnalyzerにトークン列をnormalizeさせる際、subrCharStringDictと、
+    それを命令列に変換しnormalizeをかけたものnormalizedSubrOrdersDictを一緒に与える。
+    Analyzerはcallsubrを見つけるとnormalizedSubrOrdersDictに検索をかける。存在していればそれを結合してプロセスする。
+    存在していなければAnalyzerを新たに生成して先にsubrをnormalize。その結果をdictに入れて更新させる。
+    これで全てのsubrは一度のみnormalizeされるので、ロスも生じずsubroutineを特別扱いする必要もない。
+    """
 
     def calcCubicBounds(self,name):
         """
