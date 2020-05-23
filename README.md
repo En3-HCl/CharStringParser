@@ -14,9 +14,9 @@ ttx fontfile.otf
 ```
 ttx -t CFF fontfile.otf
 ```
-を実行すると、fontfile.ttxがresultsディレクトリに出力されます。後者のコマンドはCFFテーブルのみを出力するので効率が良くなります。
+を実行すると、fontfile.ttxが出力されます。後者のコマンドはCFFテーブルのみを出力するので効率が良くなります。
 
-その上で以下のコードを実行してください。
+その上で以下のコードを実行してください。resultsディレクトリにvmtx/vhea.ttxが出力されます。
 
 ⚠️現在下記コードはCharStringParser/Sources/においてpython3を実行した場合のみ動作します。対処法は検討中です。
 
