@@ -1,4 +1,4 @@
-from charStringOrderSet import *
+from charStringOrder import *
 from charStringOrderType import *
 #charstringをパースする
 #流れは
