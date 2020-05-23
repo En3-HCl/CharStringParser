@@ -39,16 +39,24 @@ class CFFParser:
             print("CharStringsテーブルが見つかりませんでした")
             return
 
-        #CharStringを格納するdict。
-        charStringsDict = {}
-        for child in charstringsXML:
-            charStringsDict[child.attrib["name"]] = child.text
-        self.charStringsDict = charStringsDict
-
-        #次にsubrを取り出す。
+        #まずsubrを取り出す。
         self.getSubrs(cffFontXML)
         #次にgsubrを取り出す。
         self.getGlobalSubrs(cffXML)
+
+        #最後にCharStringを取り出す。
+        charStringsDict = {}
+        #FDArrayを持つ場合はそれぞれのグリフがどのFontDictを参照するかの情報も必要になる。
+        fdSelectIndexDict = {}
+        for child in charstringsXML:
+            charStringsDict[child.attrib["name"]] = child.text
+            if self.hasFontDict:
+                if not "fdSelectIndex" in child.keys:
+                    fdSelectIndexDict[child.attrib["name"]] = ""
+                    continue
+                fdSelectIndexDict[child.attrib["name"]] = child.attrib["fdSelectIndex"]
+        self.charStringsDict = charStringsDict
+
 
     def getSubrs(self, cffFontXML):
         """
