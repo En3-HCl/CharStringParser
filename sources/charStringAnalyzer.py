@@ -32,11 +32,11 @@ class CharStringAnalyzer:
             if order.type.isEndOrder():
                 break
             if order.type.isDrawOrder():
-                order.setBounds()
+                bounds = order.getBounds()
                 if minX is None:
-                    minX, minY, maxX, maxY = order.bounds[0], order.bounds[1], order.bounds[2], order.bounds[3]
+                    minX, minY, maxX, maxY = bounds[0], bounds[1], bounds[2], bounds[3]
                     continue
-                orderMinX, orderMinY, orderMaxX, orderMaxY = order.bounds[0], order.bounds[1], order.bounds[2], order.bounds[3]
+                orderMinX, orderMinY, orderMaxX, orderMaxY = bounds[0], bounds[1], bounds[2], bounds[3]
                 minX, minY, maxX, maxY = min(minX, orderMinX), min(minY, orderMinY), max(maxX, orderMaxX), max(maxY, orderMaxY)
         if minX is None:
             return (0,0,0,0)

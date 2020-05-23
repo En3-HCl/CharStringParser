@@ -10,7 +10,7 @@ class NumberToken:
 NumberToken.zero = NumberToken("0")
 ##############################################
 
-#命令情報を入れるオブジェクト
+#命令情報をまとめるオブジェクト
 class OrderSet:
     def __init__(self, type, args):
         self.args = args
@@ -22,10 +22,15 @@ class OrderSet:
         #絶対座標に直した、辿る点を入れる。ハンドルとアンカーは区別せず入れる(暫定)
         self.absolutePositions = []
 
-        #領域の情報(minX, minY, maxX, maxY)
-        self.bounds = (0, 0, 0, 0)
-
     def normalize(self):
+        """
+        args:
+         - None
+        process:
+         - damage `args`
+        return:
+         - equivalent OrderSet expressed by `rmoveto` `rlineto` `rrcurveto`
+        """
         if not(self.type.isDrawOrder() or self.type.isMoveOrder()):
             return []
         #内容をrmoveto, rlineto, rrcurvetoのみで表した形の命令列に変換したものを返す。
@@ -232,18 +237,23 @@ class OrderSet:
             self.endPosition = curPosition
             return
 
-    def setBounds(self):
-        #(minX, minY, maxX, maxY)を返す
+    def getBounds(self):
+        """
+        args:
+         - None
+        return:
+         - (minX, minY, maxX, maxY)
+        """
         #normalizeを行ってからsetBoundsを呼ぶこと。
         if self.type == CharStringOrderType.rmoveto:
-            self.bounds = (self.startPosition[0], self.startPosition[1], self.startPosition[0], self.startPosition[1])
+            return (self.startPosition[0], self.startPosition[1], self.startPosition[0], self.startPosition[1])
         if self.type == CharStringOrderType.rlineto:
             #lineTo命令においてはabsolutePositionは全て通過点なので、次の処理で良い。
             xList = list(map(lambda p:p[0],[self.startPosition]+self.absolutePositions))
             yList = list(map(lambda p:p[1],[self.startPosition]+self.absolutePositions))
             minX, maxX = min(xList), max(xList)
             minY, maxY = min(yList), max(yList)
-            self.bounds = (minX, minY, maxX, maxY)
+            return (minX, minY, maxX, maxY)
 
         if self.type == CharStringOrderType.rrcurveto:
             self.absolutePositions += [self.startPosition] #一時的に末尾に追加するが、のちに消す。この位置にあると都合がいい。
@@ -259,4 +269,4 @@ class OrderSet:
             self.absolutePositions.pop(-1)
             minX, maxX = min(xList), max(xList)
             minY, maxY = min(yList), max(yList)
-            self.bounds = (minX, minY, maxX, maxY)
+            return (minX, minY, maxX, maxY)
