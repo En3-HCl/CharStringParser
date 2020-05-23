@@ -11,7 +11,7 @@ NumberToken.zero = NumberToken("0")
 ##############################################
 
 #命令情報をまとめるオブジェクト
-class OrderSet:
+class CharStringOrder:
     def __init__(self, type, args):
         self.args = args
         self.type = type
@@ -29,7 +29,7 @@ class OrderSet:
         process:
          - damage `args`
         return:
-         - equivalent OrderSet expressed by `rmoveto` `rlineto` `rrcurveto`
+         - equivalent CharStringOrder expressed by `rmoveto` `rlineto` `rrcurveto`
         """
         if not(self.type.isDrawOrder() or self.type.isMoveOrder()):
             return []
@@ -38,9 +38,9 @@ class OrderSet:
             return [self]
 
         if self.type == CharStringOrderType.hmoveto:
-            return [OrderSet(CharStringOrderType.rmoveto, self.args+[NumberToken.zero])]
+            return [CharStringOrder(CharStringOrderType.rmoveto, self.args+[NumberToken.zero])]
         if self.type == CharStringOrderType.vmoveto:
-            return [OrderSet(CharStringOrderType.rmoveto, [NumberToken.zero]+self.args)]
+            return [CharStringOrder(CharStringOrderType.rmoveto, [NumberToken.zero]+self.args)]
 
         #新しい引数を入れる配列。
         newArgs = []
@@ -52,7 +52,7 @@ class OrderSet:
                     newArgs += [self.args[i], NumberToken.zero]
                 if i%2 == 1:
                     newArgs += [NumberToken.zero, self.args[i]]
-            return [OrderSet(CharStringOrderType.rlineto, newArgs)]
+            return [CharStringOrder(CharStringOrderType.rlineto, newArgs)]
         if self.type == CharStringOrderType.vlineto:
             #引数の個数とは無関係に、偶数番がdx、奇数番がdyである。
             for i in range(len(self.args)):
@@ -60,7 +60,7 @@ class OrderSet:
                     newArgs += [self.args[i], NumberToken.zero]
                 if i%2 == 0:
                     newArgs += [NumberToken.zero, self.args[i]]
-            return [OrderSet(CharStringOrderType.rlineto, newArgs)]
+            return [CharStringOrder(CharStringOrderType.rlineto, newArgs)]
         if self.type == CharStringOrderType.hhcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
             handle1dy = NumberToken.zero
@@ -76,7 +76,7 @@ class OrderSet:
 
                 if not handle1dy == NumberToken.zero:
                     handle1dy = NumberToken.zero
-            return [OrderSet(CharStringOrderType.rrcurveto, newArgs)]
+            return [CharStringOrder(CharStringOrderType.rrcurveto, newArgs)]
         if self.type == CharStringOrderType.vvcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
             handle1dx = NumberToken.zero
@@ -92,7 +92,7 @@ class OrderSet:
 
                 if not handle1dx == NumberToken.zero:
                     handle1dx = NumberToken.zero
-            return [OrderSet(CharStringOrderType.rrcurveto, newArgs)]
+            return [CharStringOrder(CharStringOrderType.rrcurveto, newArgs)]
         if self.type == CharStringOrderType.hvcurveto:
             #引数の個数は4+8*n+1? または 8*n+1?である。引数はdx dx dy dy dy dx dy dxを並べたものになるので、それを考慮して処理を簡略化する。
             #4項ずつ見た場合、偶数番目の4項はdx dx dy dy、奇数番目の4項はdy dx dy dxである。
@@ -115,7 +115,7 @@ class OrderSet:
             if len(self.args)%8 == 5:
                 #このとき最後の1項dxが存在する。
                 newArgs[-2] = self.args[-1]
-            return [OrderSet(CharStringOrderType.rrcurveto, newArgs)]
+            return [CharStringOrder(CharStringOrderType.rrcurveto, newArgs)]
 
         if self.type == CharStringOrderType.vhcurveto:
             #引数の個数は4+8*n+1? または 8*n+1?である。引数はdx dx dy dy dy dx dy dxを並べたものになるので、それを考慮して処理を簡略化する。
@@ -139,7 +139,7 @@ class OrderSet:
             if len(self.args)%8 == 1:
                 #このとき最後の1項dxが存在する。
                 newArgs[-2] = self.args[-1]
-            return [OrderSet(CharStringOrderType.rrcurveto, newArgs)]
+            return [CharStringOrder(CharStringOrderType.rrcurveto, newArgs)]
         if self.type == CharStringOrderType.rcurveline:
             #rcurvelineはrrcurvetoとrlinetoの合成に等しいというので、教え通りに処理する。
             linetoArgs = self.args[-2:]
@@ -147,9 +147,9 @@ class OrderSet:
             #最後の2つを無視して6個ずつ見る。
             for i in range(int((len(self.args)-len(self.args)%6)/6)):
                 args = self.args[6*i:6*i+6]
-                order = OrderSet(CharStringOrderType.rrcurveto, args)
+                order = CharStringOrder(CharStringOrderType.rrcurveto, args)
                 orderSets.append(order)
-            orderSets.append(OrderSet(CharStringOrderType.rlineto, linetoArgs))
+            orderSets.append(CharStringOrder(CharStringOrderType.rlineto, linetoArgs))
             return orderSets
         if self.type == CharStringOrderType.rlinecurve:
             #rcurvelineはrlinetoとrrcurvelineの合成に等しいというので、教え通りに処理する。
@@ -158,13 +158,13 @@ class OrderSet:
             #最後の6つを無視して2個ずつ見る。
             for i in range(int((len(self.args)-6)/2)):
                 args = self.args[2*i:2*i+2]
-                order = OrderSet(CharStringOrderType.rlineto, args)
+                order = CharStringOrder(CharStringOrderType.rlineto, args)
                 orderSets.append(order)
-            orderSets.append(OrderSet(CharStringOrderType.rrcurveto, curvetoArgs))
+            orderSets.append(CharStringOrder(CharStringOrderType.rrcurveto, curvetoArgs))
             return orderSets
         if self.type == CharStringOrderType.flex:
             args = self.args[0:12]
-            return [OrderSet(CharStringOrderType.rrcurveto, args)]
+            return [CharStringOrder(CharStringOrderType.rrcurveto, args)]
         if self.type == CharStringOrderType.flex1:
             dx1, dy1 = self.args[0].toNumber(), self.args[1].toNumber()
             dx2, dy2 = self.args[2].toNumber(), self.args[3].toNumber()
@@ -179,17 +179,17 @@ class OrderSet:
                 args = self.args[0:10] + [NumberToken(str(-xSum)), self.args[10]]
             else:
                 args = self.args[0:10] + [self.args[10], NumberToken(str(-ySum))]
-            return [OrderSet(CharStringOrderType.rrcurveto, args)]
+            return [CharStringOrder(CharStringOrderType.rrcurveto, args)]
         if self.type == CharStringOrderType.hflex:
             #  dx1 0 dx2 dy2 dx3 0 dx4 0 dx5 dy2 dx6 50 flex
             #= dx1 0 dx2 dy2 dx3 0 dx4 0 dx5 dy2 dx6 rrcurveto
             args = [self.args[0], NumberToken.zero, self.args[1], self.args[2], self.args[3], NumberToken.zero, self.args[4], NumberToken.zero, self.args[5], self.args[2], self.args[6], NumberToken.zero]
-            return [OrderSet(CharStringOrderType.rrcurveto, args)]
+            return [CharStringOrder(CharStringOrderType.rrcurveto, args)]
         if self.type == CharStringOrderType.hflex1:
             #dx1 dy1 dx2 dy2 dx3 0 dx4 0 dx5 dy5 dx6 {-(dy1+dy2+dy5)} rrcurveto
             dy6 = NumberToken(str(-(self.args[1].toNumber() + self.args[3].toNumber() + self.args[7].toNumber())))
             args = [self.args[0], self.args[1], self.args[2], self.args[3], self.args[4], NumberToken.zero, self.args[5], NumberToken.zero, self.args[6], self.args[7], self.args[8], dy6]
-            return [OrderSet(CharStringOrderType.rrcurveto, args)]
+            return [CharStringOrder(CharStringOrderType.rrcurveto, args)]
 
     def setAbsolutePosition(self, startPosition):
         if not (self.type.isDrawOrder() or self.type.isMoveOrder()):

@@ -80,7 +80,7 @@ class TokenListParser:
         self.curToken = self.tokens[self.count]
         self.count = self.count+1
 
-    #トークン列をパースしてOrderSetオブジェクトの列にする。
+    #トークン列をパースしてCharStringOrderオブジェクトの列にする。
     def parseTokens(self):
         orders = []
 
@@ -88,10 +88,10 @@ class TokenListParser:
         #パースは次の考え方で行う。
         # 1.命令は前置と後置が混ざっているため、命令を中心にパースする。
         # 2.命令がわからない段階では数値はstackに入れておく。
-        # 3.命令がわかったらまとめてOrderSetオブジェクトとする。
+        # 3.命令がわかったらまとめてCharStringOrderオブジェクトとする。
 
         while True:
-            #OrderSetオブジェクトの列を返して終了する。
+            #CharStringOrderオブジェクトの列を返して終了する。
             if self.curToken == "last":
                 return orders
             if type(self.curToken) is str:
@@ -103,7 +103,7 @@ class TokenListParser:
                 continue
             #後置命令のため、stackの数値列を受け取ってオブジェクトとする。
             if self.curToken.isPostfix():
-                order = OrderSet(self.curToken, self.stack)
+                order = CharStringOrder(self.curToken, self.stack)
                 self.stack = []
                 orders.append(order)
                 self.next()
@@ -111,24 +111,24 @@ class TokenListParser:
             if self.curToken.isUniquefix():
                 #後置命令だが直後のvstemは記述されないため、vstemの分までパースする。
                 if self.curToken == CharStringOrderType.hstemhm:
-                    hstem = OrderSet(CharStringOrderType.hstem, self.stack)
+                    hstem = CharStringOrder(CharStringOrderType.hstem, self.stack)
                     orders.append(hstem)
 
                     self.next()
                     self.parseNumberTokens()
-                    vstem = OrderSet(CharStringOrderType.vstem, self.stack)
+                    vstem = CharStringOrder(CharStringOrderType.vstem, self.stack)
                     orders.append(vstem)
                     continue
                 #endchar/returnが出てきた場合終了
                 if self.curToken.isEndOrder():
-                    orders.append(OrderSet(self.curToken, []))
+                    orders.append(CharStringOrder(self.curToken, []))
                     return orders
                 continue
             #前置命令のため、命令が来てから数値列をパースする。
             if self.curToken.isPrefix():
                 self.next()
                 self.parseNumberTokens(1)
-                order = OrderSet(CharStringOrderType.hintmask, self.stack)
+                order = CharStringOrder(CharStringOrderType.hintmask, self.stack)
                 orders.append(order)
                 continue
             #次のトークンを呼び出す。
