@@ -164,9 +164,9 @@ class CFFParser:
         tokens = strParser.parseString()
         #トークン列から命令列へと変換する
         tokensParser = TokenListParser(tokens)
-        orderSets = tokensParser.parseTokens()
+        orders = tokensParser.parseTokens()
         #命令を分析するAnalyzerを作成する
-        analyzer = CharStringAnalyzer(orderSets)
+        analyzer = CharStringAnalyzer(orders)
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する
         normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize())
         #絶対座標を計算する
