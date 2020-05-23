@@ -8,7 +8,7 @@ class CFFParser:
         #初期化
         self.extension = "ttx"
 
-        self.cffString = str
+        self.cffString = ""
         root = ElementTree.parse(path).getroot()
 
         #CharStringの文字列をそれぞれのグリフに対して抜き出す
@@ -160,6 +160,13 @@ class CFFParser:
                 gsubrCharStringDict[int(child.attrib["index"])] = child.text
         self.gsubrCharStringDict = gsubrCharStringDict
         self.gsubrCount = len(gsubrCharStringDict)
+
+    def parseAllSubrs(self):
+        """
+        args: None
+        process: parse subrs' CharString to [CharstringOrder] and expands all `callsubr` and `callgsubr`, then set them `self.(g)subrOrdersDict`
+        """
+        pass
 
     def calcCubicBounds(self,name):
         """
