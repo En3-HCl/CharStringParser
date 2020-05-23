@@ -46,39 +46,97 @@ class CFFParser:
         self.charStringsDict = charStringsDict
 
         #次にsubrを取り出す。
-        subrCharStringDict = {}
+        self.getSubrs(cffFontXML)
+        #次にgsubrを取り出す。
+        self.getGlobalSubrs(cffXML)
+
+    def getSubrs(self, cffFontXML):
+        """
+        args:
+         - cffFontXML: <CFFFont> Table
+        process:
+         - initialize `hasSubroutine` `subrCharStringDict` `subrCount` `hasFontDict`
+        return:
+         - None
+        """
+        self.hasFontDict = False        #FontDictを持っているかどうか。
+        self.hasSubroutine = False      #subrを持っているかどうか。
+        #次にsubrを取り出す。
+        subrCharStringDict = {}         #subrのCharStringを格納するdict
 
         privateXML = None
+        FDArrayXML = None
+
         for child in cffFontXML:
             if child.tag == "Private":
                 privateXML = child
                 break
-        if privateXML is None:
-            print("Privateテーブルが見つかりませんでした")
-            return
-
-        subrsXML = None
-        self.hasSubroutine = False
-        for child in privateXML:
-            if child.tag == "Subrs":
-                subrsXML = child
+            if child.tag == "FDArray":
+                FDArrayXML = child
                 break
-        if subrsXML is None:
-            print("Subroutineは存在しません")
-        else:
-            self.hasSubroutine = True
 
-        if self.hasSubroutine:
-            for child in subrsXML:
-                subrCharStringDict[int(child.attrib["index"])] = child.text
+        if privateXML is None and FDArrayXML is None:
+            print("PrivateテーブルもFDArrayテーブルも見つかりませんでした")
+
+        if not privateXML is None:
+            subrsXML = None
+            for child in privateXML:
+                if child.tag == "Subrs":
+                    subrsXML = child
+                    break
+            if subrsXML is None:
+                print("Subroutineは存在しません")
+            else:
+                self.hasSubroutine = True
+
+            if self.hasSubroutine:
+                for child in subrsXML:
+                    subrCharStringDict[int(child.attrib["index"])] = child.text
+        if not FDArrayXML is None:
+            self.hasFontDict = True
+            for fontdictXML in FDArrayXML:
+                if not fontdictXML.tag == "FontDict":
+                    continue
+                fdsubrdict = {}
+                privateXML = None
+                for child in fontdictXML:
+                    if child.tag == "Private":
+                        privateXML = child
+                        break
+                if privateXML is None:
+                    print("FontDictテーブルの中にPrivateテーブルが見つかりません")
+                    continue
+                subrsXML = None
+                for child in privateXML:
+                    if child.tag == "Subrs":
+                        subrsXML = child
+                        break
+                if subrsXML is None:
+                    print(f"index={fontdictXML.attrib['index']}のFontDictのPrivateテーブルにSubroutineが存在しません")
+                    continue
+                else:
+                    self.hasSubroutine = True
+
+                if self.hasSubroutine:
+                    for child in subrsXML:
+                        fdsubrdict[int(child.attrib["index"])] = child.text
+                subrCharStringDict[int(fontdictXML.attrib["index"])] = fdsubrdict
+
         self.subrCharStringDict = subrCharStringDict
         self.subrCount = len(subrCharStringDict)
 
-        #次にgsubrを取り出す。
-        gsubrCharStringDict = {}
 
-        globalSubrsXML = None
-        self.hasGlobalSubroutine = False
+    def getGlobalSubrs(self, cffXML):
+        """
+        args:
+         - cffXML: <CFF> Table
+        process:
+         - initialize `hasGlobalSubroutine` `gsubrCharStringDict` `gsubrCount`
+        return:
+         - None
+        """
+
+        gsubrCharStringDict = {}
 
         for child in cffXML:
             if child.tag == "GlobalSubrs":
@@ -91,7 +149,7 @@ class CFFParser:
 
         if self.hasGlobalSubroutine:
             for child in globalSubrsXML:
-                subrCharStringDict[int(child.attrib["index"])] = child.text
+                gsubrCharStringDict[int(child.attrib["index"])] = child.text
         self.gsubrCharStringDict = gsubrCharStringDict
         self.gsubrCount = len(gsubrCharStringDict)
 
