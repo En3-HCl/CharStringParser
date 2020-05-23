@@ -162,6 +162,12 @@ class CFFParser:
         self.gsubrCount = len(gsubrCharStringDict)
 
     def calcCubicBounds(self,name):
+        """
+        args:
+         - name: name of glyph
+        return:
+         - bounds: (minX, minY, maxX, maxY)
+        """
     #指定されたグリフのboundsを(minX, minY, maxX, maxY)の形で返す
         if self.charStringsDict[name] is None:
             print("データがありません")
