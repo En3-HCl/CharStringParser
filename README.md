@@ -39,3 +39,7 @@ parser.vheaDescent = -512
 #vmtxとvheaのttxファイルをcharstring/resultsに出力する
 parser.get_vmtx_and_vhea_table()
 ```
+## 未対応の命令
+ - `add`などの計算
+ - `callsubr`命令
+ - `return`命令
