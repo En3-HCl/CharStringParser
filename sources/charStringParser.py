@@ -6,7 +6,7 @@ from charStringOrderType import *
 #2. トークンの列をオブジェクトの列に変換する。
 #で行う。
 
-class StringParser:
+class CharStringParser:
 
     def __init__(self, string):
         self.string = string

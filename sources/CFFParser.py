@@ -160,7 +160,7 @@ class CFFParser:
             return
         charStringCode = self.charStringsDict[name]
         #文字列の状態からトークン列へと変換する
-        strParser = StringParser(charStringCode)
+        strParser = CharStringParser(charStringCode)
         tokens = strParser.parseString()
         #トークン列から命令列へと変換する
         tokensParser = TokenListParser(tokens)
