@@ -77,20 +77,63 @@ class CharStringOrder:
                     addArgs = self.args[0:-1]
                     normalizedOrders[0].args = addArgs + normalizedOrders[0].args
                     return normalizedOrders
+            #FontDictでないタイプの場合
             else:
-                pass
+                if index in cffData.normalizedSubrOrdersDict.keys():
+                    normalizedOrders = normalizedSubrOrdersSelectedDict[index]
+                    addArgs = self.args[0:-1]
+                    normalizedOrders[0].args = addArgs + normalizedOrders[0].args
+                    return normalizedOrders
+                else:
+                    if not index in self.cffData.subrCharStringDict[cffData.fdSelectIndex].keys():
+                        print("データがありません")
+                        return
+                    charStringCode = self.cffData.subrCharStringDict[cffData.fdSelectIndex][index]
+                    #文字列の状態からトークン列へと変換する
+                    strParser = CharStringParser(charStringCode)
+                    tokens = strParser.parseString()
+                    #トークン列から命令列へと変換する
+                    tokensParser = TokenListParser(tokens)
+                    orders = tokensParser.parseTokens()
+                    #命令を分析するAnalyzerを作成する
+                    analyzer = CharStringAnalyzer(orders)
+                    #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
+                    #副作用としてself.normalized(G)SubrOrdersDictは更新される。
+                    normalizedOrders = analyzer.normalize(cffData)
+                    cffData.normalizedSubrOrdersDict[cffData.fdSelectIndex][index] = normalizedOrders
+
+                    addArgs = self.args[0:-1]
+                    normalizedOrders[0].args = addArgs + normalizedOrders[0].args
+                    return normalizedOrders
 
         if self.type == CharStringOrderType.callgsubr:
             index = self.args[-1].toNumber() + gsubrIndexBias
             if index in cffData.normalizedGsubrOrdersDict.keys():
-                normalizedOrders = cffData.normalizedGsubrOrdersDict[index]
+                normalizedOrders = normalizedSubrOrdersSelectedDict[index]
                 addArgs = self.args[0:-1]
                 normalizedOrders[0].args = addArgs + normalizedOrders[0].args
                 return normalizedOrders
-            #されていない場合
             else:
-                pass
+                if not index in self.cffData.gsubrCharStringDict[cffData.fdSelectIndex].keys():
+                    print("データがありません")
+                    return
+                charStringCode = self.cffData.gsubrCharStringDict[cffData.fdSelectIndex][index]
+                #文字列の状態からトークン列へと変換する
+                strParser = CharStringParser(charStringCode)
+                tokens = strParser.parseString()
+                #トークン列から命令列へと変換する
+                tokensParser = TokenListParser(tokens)
+                orders = tokensParser.parseTokens()
+                #命令を分析するAnalyzerを作成する
+                analyzer = CharStringAnalyzer(orders)
+                #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
+                #副作用としてself.normalized(G)SubrOrdersDictは更新される。
+                normalizedOrders = analyzer.normalize(cffData)
+                cffData.normalizedGsubrOrdersDict[cffData.fdSelectIndex][index] = normalizedOrders
 
+                addArgs = self.args[0:-1]
+                normalizedOrders[0].args = addArgs + normalizedOrders[0].args
+                return normalizedOrders
 
         #新しい引数を入れる配列。
         newArgs = []
