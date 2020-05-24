@@ -57,6 +57,11 @@ class CFFParser:
                 fdSelectIndexDict[child.attrib["name"]] = child.attrib["fdSelectIndex"]
         self.charStringsDict = charStringsDict
 
+        self.normalizedSubrOrdersDict = {}
+        self.normalizedGsubrOrdersDict = {}
+        if self.hasFontDict:
+            for key in self.gsubrCharStringDict.keys:
+                self.normalizedGsubrOrdersDict[key] = {}
 
     def getSubrs(self, cffFontXML):
         """
