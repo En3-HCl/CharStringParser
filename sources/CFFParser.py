@@ -200,7 +200,7 @@ class CFFParser:
         return:
          - bounds: (minX, minY, maxX, maxY)
         """
-        if self.cffData.charStringsDict[name] is None:
+        if not name in self.cffData.charStringsDict.keys():
             print("データがありません")
             return
         charStringCode = self.cffData.charStringsDict[name]
@@ -214,10 +214,7 @@ class CFFParser:
         analyzer = CharStringAnalyzer(orders)
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
         #副作用としてself.normalized(G)SubrOrdersDictは更新される。
-        if self.cffData.hasFontDict:
-            normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.cffData.normalizedSubrOrdersDict, self.cffData.normalizedGsubrOrdersDict, self.cffData.subrIndexBias, self.cffData.gsubrIndexBias, fdSelectIndex = self.cffData.fdSelectIndexDict[name]))
-        else:
-            normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.cffData.normalizedSubrOrdersDict, self.cffData.normalizedGsubrOrdersDict, self.cffData.subrIndexBias, self.cffData.gsubrIndexBias))
+        normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.cffData))
         #絶対座標を計算する
         normalizedAnalyzer.setAbsoluteCoordinate()
         #グリフの領域を計算し、(minX, minY, maxX, maxY)を表示する

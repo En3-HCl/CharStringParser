@@ -22,7 +22,7 @@ class CharStringOrder:
         #絶対座標に直した、辿る点を入れる。ハンドルとアンカーは区別せず入れる(暫定)
         self.absolutePositions = []
 
-    def normalize(self, normalizedSubrOrdersDict, normalizedGsubrOrdersDict, subrIndexBias, gsubrIndexBias, fdSelectIndex=None):
+    def normalize(self, cffData):
         """
         args:
          - normalizedSubrOrdersDict
@@ -46,9 +46,9 @@ class CharStringOrder:
             return [CharStringOrder(CharStringOrderType.rmoveto, [NumberToken.zero]+self.args)]
 
         if self.type == CharStringOrderType.callsubr:
-            index = self.args[-1] + subrIndexBias
-            if not fdSelectIndex is None:
-                normalizedSubrOrdersSelectedDict = normalizedSubrOrdersDict[fdSelectIndex]
+            index = self.args[-1].toNumber() + cffData.subrIndexBias
+            if cffData.hasFontDict:
+                normalizedSubrOrdersSelectedDict = cffData.normalizedSubrOrdersDict[cffData.fdSelectIndex]
                 #すでに呼び出すsubrがnormalizeされていた場合
                 if index in normalizedSubrOrdersSelectedDict.keys:
                     normalizedOrders = normalizedSubrOrdersSelectedDict[index]
@@ -57,12 +57,33 @@ class CharStringOrder:
                     return normalizedOrders
                 #されていない場合
                 else:
-                    pass
-                    
+                    if not index in self.cffData.subrCharStringDict[cffData.fdSelectIndex].keys:
+                        print("データがありません")
+                        return
+                    charStringCode = self.cffData.subrCharStringDict[cffData.fdSelectIndex][index]
+                    #文字列の状態からトークン列へと変換する
+                    strParser = CharStringParser(charStringCode)
+                    tokens = strParser.parseString()
+                    #トークン列から命令列へと変換する
+                    tokensParser = TokenListParser(tokens)
+                    orders = tokensParser.parseTokens()
+                    #命令を分析するAnalyzerを作成する
+                    analyzer = CharStringAnalyzer(orders)
+                    #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
+                    #副作用としてself.normalized(G)SubrOrdersDictは更新される。
+                    normalizedOrders = analyzer.normalize(cffData)
+                    cffData.normalizedSubrOrdersDict[cffData.fdSelectIndex][index] = normalizedOrders
+
+                    addArgs = self.args[0:-1]
+                    normalizedOrders[0].args = addArgs + normalizedOrders[0].args
+                    return normalizedOrders
+            else:
+                pass
+
         if self.type == CharStringOrderType.callgsubr:
-            index = self.args[-1] + gsubrIndexBias
-            if index in normalizedGsubrOrdersDict.keys:
-                normalizedOrders = normalizedGsubrOrdersDict[index]
+            index = self.args[-1].toNumber() + gsubrIndexBias
+            if index in cffData.normalizedGsubrOrdersDict.keys:
+                normalizedOrders = cffData.normalizedGsubrOrdersDict[index]
                 addArgs = self.args[0:-1]
                 normalizedOrders[0].args = addArgs + normalizedOrders[0].args
                 return normalizedOrders
