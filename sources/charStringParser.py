@@ -119,9 +119,13 @@ class TokenListParser:
                     vstem = CharStringOrder(CharStringOrderType.vstem, self.stack)
                     orders.append(vstem)
                     continue
-                #endchar/returnが出てきた場合終了
-                if self.curToken.isEndOrder():
+                #endchar出てきた場合終了
+                if self.curToken == CharStringOrder.endchar:
                     orders.append(CharStringOrder(self.curToken, []))
+                    return orders
+                #returnの場合はstackの数値を全てreturnに持たせて終了する。
+                if self.curToken == CharStringOrder._return:
+                    orders.append(CharStringOrder(self.curToken, self.stack))
                     return orders
                 continue
             #前置命令のため、命令が来てから数値列をパースする。
