@@ -120,11 +120,11 @@ class TokenListParser:
                     orders.append(vstem)
                     continue
                 #endchar出てきた場合終了
-                if self.curToken == CharStringOrder.endchar:
+                if self.curToken == CharStringOrderType.endchar:
                     orders.append(CharStringOrder(self.curToken, []))
                     return orders
                 #returnの場合はstackの数値を全てreturnに持たせて終了する。
-                if self.curToken == CharStringOrder._return:
+                if self.curToken == CharStringOrderType._return:
                     orders.append(CharStringOrder(self.curToken, self.stack))
                     return orders
                 continue
