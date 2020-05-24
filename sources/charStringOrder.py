@@ -22,7 +22,7 @@ class CharStringOrder:
         #絶対座標に直した、辿る点を入れる。ハンドルとアンカーは区別せず入れる(暫定)
         self.absolutePositions = []
 
-    def normalize(self, normalizedSubrOrdersDict, normalizedGsubrOrdersDict, subrIndexBias, gsubrIndexBias):
+    def normalize(self, normalizedSubrOrdersDict, normalizedGsubrOrdersDict, subrIndexBias, gsubrIndexBias, fdSelectIndex=None):
         """
         args:
          - normalizedSubrOrdersDict
@@ -46,9 +46,9 @@ class CharStringOrder:
             return [CharStringOrder(CharStringOrderType.rmoveto, [NumberToken.zero]+self.args)]
 
         if self.type == CharStringOrderType.callsubr:
-            pass
+            index = self.args[-1] + subrIndexBias
         if self.type == CharStringOrderType.callgsubr:
-            pass
+            index = self.args[-1] + gsubrIndexBias
 
 
         #新しい引数を入れる配列。

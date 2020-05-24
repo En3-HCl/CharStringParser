@@ -59,6 +59,7 @@ class CFFParser:
 
         self.normalizedSubrOrdersDict = {}
         self.normalizedGsubrOrdersDict = {}
+        self.fdSelectIndexDict = fdSelectIndexDict
         if self.hasFontDict:
             for key in self.gsubrCharStringDict.keys:
                 self.normalizedGsubrOrdersDict[key] = {}
@@ -137,9 +138,9 @@ class CFFParser:
 
         self.subrCharStringDict = subrCharStringDict
         self.subrIndexBias = 32768
-        if len(subrCharStringDict)<1240
+        if len(subrCharStringDict)<1240:
             self.subrIndexBias = 107
-        if len(subrCharStringDict)<33900
+        if len(subrCharStringDict)<33900:
             self.subrIndexBias = 1131
 
 
@@ -169,9 +170,9 @@ class CFFParser:
                 gsubrCharStringDict[int(child.attrib["index"])] = child.text
         self.gsubrCharStringDict = gsubrCharStringDict
         self.gsubrIndexBias = 32768
-        if len(subrCharStringDict)<1240
+        if len(gsubrCharStringDict)<1240:
             self.gsubrIndexBias = 107
-        if len(subrCharStringDict)<33900
+        if len(gsubrCharStringDict)<33900:
             self.gsubrIndexBias = 1131
 
     #サブルーティンの処理について
@@ -205,7 +206,10 @@ class CFFParser:
         analyzer = CharStringAnalyzer(orders)
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
         #副作用としてself.normalized(G)SubrOrdersDictは更新される。
-        normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.normalizedSubrOrdersDict, self.normalizedGsubrOrdersDict, self.subrIndexBias, self.gsubrIndexBias))
+        if self.hasFontDict:
+            normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.normalizedSubrOrdersDict, self.normalizedGsubrOrdersDict, self.subrIndexBias, self.gsubrIndexBias, fdSelectIndex = self.fdSelectIndexDict[name]))
+        else:
+            normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.normalizedSubrOrdersDict, self.normalizedGsubrOrdersDict, self.subrIndexBias, self.gsubrIndexBias))
         #絶対座標を計算する
         normalizedAnalyzer.setAbsoluteCoordinate()
         #グリフの領域を計算し、(minX, minY, maxX, maxY)を表示する
