@@ -3,12 +3,20 @@ from charStringAnalyzer import *
 from xml.etree import ElementTree
 import os
 
+#CFFのデータをまとめてもつオブジェクト
+class CFFData:
+    def __init__(self):
+        pass
+
+
+
 class CFFParser:
     def __init__(self, path):
         #初期化
         self.extension = "ttx"
+        #データをまとめるオブジェクト
+        self.cffData = CFFData()
 
-        self.cffString = ""
         root = ElementTree.parse(path).getroot()
 
         #CharStringの文字列をそれぞれのグリフに対して抜き出す
@@ -50,19 +58,20 @@ class CFFParser:
         fdSelectIndexDict = {}
         for child in charstringsXML:
             charStringsDict[child.attrib["name"]] = child.text
-            if self.hasFontDict:
+            if self.cffData.hasFontDict:
                 if not "fdSelectIndex" in child.keys:
                     fdSelectIndexDict[child.attrib["name"]] = ""
                     continue
                 fdSelectIndexDict[child.attrib["name"]] = int(child.attrib["fdSelectIndex"])
-        self.charStringsDict = charStringsDict
 
-        self.normalizedSubrOrdersDict = {}
-        self.normalizedGsubrOrdersDict = {}
-        self.fdSelectIndexDict = fdSelectIndexDict
-        if self.hasFontDict:
-            for key in self.gsubrCharStringDict.keys:
-                self.normalizedGsubrOrdersDict[key] = {}
+        self.cffData.charStringsDict = charStringsDict
+
+        self.cffData.normalizedSubrOrdersDict = {}
+        self.cffData.normalizedGsubrOrdersDict = {}
+        self.cffData.fdSelectIndexDict = fdSelectIndexDict
+        if self.cffData.hasFontDict:
+            for key in self.cffData.gsubrCharStringDict.keys:
+                self.cffData.normalizedGsubrOrdersDict[key] = {}
 
     def getSubrs(self, cffFontXML):
         """
@@ -73,8 +82,8 @@ class CFFParser:
         return:
          - None
         """
-        self.hasFontDict = False        #FontDictを持っているかどうか。
-        self.hasSubroutine = False      #subrを持っているかどうか。
+        self.cffData.hasFontDict = False        #FontDictを持っているかどうか。
+        self.cffData.hasSubroutine = False      #subrを持っているかどうか。
         #次にsubrを取り出す。
         subrCharStringDict = {}         #subrのCharStringを格納するdict
 
@@ -101,13 +110,13 @@ class CFFParser:
             if subrsXML is None:
                 print("Subroutineは存在しません")
             else:
-                self.hasSubroutine = True
+                self.cffData.hasSubroutine = True
 
-            if self.hasSubroutine:
+            if self.cffData.hasSubroutine:
                 for child in subrsXML:
                     subrCharStringDict[int(child.attrib["index"])] = child.text
         if not FDArrayXML is None:
-            self.hasFontDict = True
+            self.cffData.hasFontDict = True
             for fontdictXML in FDArrayXML:
                 if not fontdictXML.tag == "FontDict":
                     continue
@@ -129,19 +138,19 @@ class CFFParser:
                     print(f"index={fontdictXML.attrib['index']}のFontDictのPrivateテーブルにSubroutineが存在しません")
                     continue
                 else:
-                    self.hasSubroutine = True
+                    self.cffData.hasSubroutine = True
 
-                if self.hasSubroutine:
+                if self.cffData.hasSubroutine:
                     for child in subrsXML:
                         fdsubrdict[int(child.attrib["index"])] = child.text
                 subrCharStringDict[int(fontdictXML.attrib["index"])] = fdsubrdict
 
-        self.subrCharStringDict = subrCharStringDict
-        self.subrIndexBias = 32768
+        self.cffData.subrCharStringDict = subrCharStringDict
+        self.cffData.subrIndexBias = 32768
         if len(subrCharStringDict)<1240:
-            self.subrIndexBias = 107
+            self.cffData.subrIndexBias = 107
         if len(subrCharStringDict)<33900:
-            self.subrIndexBias = 1131
+            self.cffData.subrIndexBias = 1131
 
 
     def getGlobalSubrs(self, cffXML):
@@ -163,17 +172,17 @@ class CFFParser:
         if globalSubrsXML is None:
             print("Global Subroutineは存在しません")
         else:
-            self.hasGlobalSubroutine = True
+            self.cffData.hasGlobalSubroutine = True
 
-        if self.hasGlobalSubroutine:
+        if self.cffData.hasGlobalSubroutine:
             for child in globalSubrsXML:
                 gsubrCharStringDict[int(child.attrib["index"])] = child.text
-        self.gsubrCharStringDict = gsubrCharStringDict
-        self.gsubrIndexBias = 32768
+        self.cffData.gsubrCharStringDict = gsubrCharStringDict
+        self.cffData.gsubrIndexBias = 32768
         if len(gsubrCharStringDict)<1240:
-            self.gsubrIndexBias = 107
+            self.cffData.gsubrIndexBias = 107
         if len(gsubrCharStringDict)<33900:
-            self.gsubrIndexBias = 1131
+            self.cffData.gsubrIndexBias = 1131
 
     #サブルーティンの処理について
     """
@@ -191,11 +200,10 @@ class CFFParser:
         return:
          - bounds: (minX, minY, maxX, maxY)
         """
-    #指定されたグリフのboundsを(minX, minY, maxX, maxY)の形で返す
-        if self.charStringsDict[name] is None:
+        if self.cffData.charStringsDict[name] is None:
             print("データがありません")
             return
-        charStringCode = self.charStringsDict[name]
+        charStringCode = self.cffData.charStringsDict[name]
         #文字列の状態からトークン列へと変換する
         strParser = CharStringParser(charStringCode)
         tokens = strParser.parseString()
@@ -206,10 +214,10 @@ class CFFParser:
         analyzer = CharStringAnalyzer(orders)
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
         #副作用としてself.normalized(G)SubrOrdersDictは更新される。
-        if self.hasFontDict:
-            normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.normalizedSubrOrdersDict, self.normalizedGsubrOrdersDict, self.subrIndexBias, self.gsubrIndexBias, fdSelectIndex = self.fdSelectIndexDict[name]))
+        if self.cffData.hasFontDict:
+            normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.cffData.normalizedSubrOrdersDict, self.cffData.normalizedGsubrOrdersDict, self.cffData.subrIndexBias, self.cffData.gsubrIndexBias, fdSelectIndex = self.cffData.fdSelectIndexDict[name]))
         else:
-            normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.normalizedSubrOrdersDict, self.normalizedGsubrOrdersDict, self.subrIndexBias, self.gsubrIndexBias))
+            normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.cffData.normalizedSubrOrdersDict, self.cffData.normalizedGsubrOrdersDict, self.cffData.subrIndexBias, self.cffData.gsubrIndexBias))
         #絶対座標を計算する
         normalizedAnalyzer.setAbsoluteCoordinate()
         #グリフの領域を計算し、(minX, minY, maxX, maxY)を表示する
@@ -219,9 +227,9 @@ class CFFParser:
     def calcGlyphsCubicBounds(self):
     #全てのグリフのboundsを{name: (minX, minY, maxX, maxY)}の形で返す
         dict = {}
-        for key in self.charStringsDict.keys():
+        for key in self.cffData.charStringsDict.keys():
             dict[key] = self.calcCubicBounds(key)
-        self.glyphBoundsDict = dict
+        self.cffData.glyphBoundsDict = dict
         return dict
 
     def makePath(self,name):
@@ -248,10 +256,10 @@ class CFFParser:
          - call calcCubicBounds
         return: None
         """
-        glyphsCount = len(self.glyphBoundsDict)
+        glyphsCount = len(self.cffData.glyphBoundsDict)
         if glyphsCount == 0:
             self.calcCubicBounds()
-        glyphsCount = len(self.glyphBoundsDict)
+        glyphsCount = len(self.cffData.glyphBoundsDict)
     #vmtxテーブルとvheaテーブルを生成する
         vmtxPath = self.makePath("vmtx")
         vheaPath = self.makePath("vhea")
@@ -265,9 +273,9 @@ class CFFParser:
 
         self.writeFile(vmtxPath, "\n<vmtx>")
 
-        for key in self.glyphBoundsDict.keys():
-            yMin = round(self.glyphBoundsDict[key][1])
-            yMax = round(self.glyphBoundsDict[key][3])
+        for key in self.cffData.glyphBoundsDict.keys():
+            yMin = round(self.cffData.glyphBoundsDict[key][1])
+            yMax = round(self.cffData.glyphBoundsDict[key][3])
             tsb = self.ascender - yMax  #ascender - yMax
             bsb = yMin - self.descender #yMin - descender
             yMaxEx = tsb + (yMax - yMin)
