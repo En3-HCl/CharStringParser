@@ -68,7 +68,7 @@ class CFFParser:
         args:
          - cffFontXML: <CFFFont> Table
         process:
-         - initialize `hasSubroutine` `subrCharStringDict` `subrCount` `hasFontDict`
+         - initialize `hasSubroutine` `subrCharStringDict` `subrIndexBias` `hasFontDict`
         return:
          - None
         """
@@ -136,7 +136,11 @@ class CFFParser:
                 subrCharStringDict[int(fontdictXML.attrib["index"])] = fdsubrdict
 
         self.subrCharStringDict = subrCharStringDict
-        self.subrCount = len(subrCharStringDict)
+        self.subrIndexBias = 32768
+        if len(subrCharStringDict)<1240
+            self.subrIndexBias = 107
+        if len(subrCharStringDict)<33900
+            self.subrIndexBias = 1131
 
 
     def getGlobalSubrs(self, cffXML):
@@ -144,7 +148,7 @@ class CFFParser:
         args:
          - cffXML: <CFF> Table
         process:
-         - initialize `hasGlobalSubroutine` `gsubrCharStringDict` `gsubrCount`
+         - initialize `hasGlobalSubroutine` `gsubrCharStringDict` `gsubrIndexBias`
         return:
          - None
         """
@@ -164,7 +168,11 @@ class CFFParser:
             for child in globalSubrsXML:
                 gsubrCharStringDict[int(child.attrib["index"])] = child.text
         self.gsubrCharStringDict = gsubrCharStringDict
-        self.gsubrCount = len(gsubrCharStringDict)
+        self.gsubrIndexBias = 32768
+        if len(subrCharStringDict)<1240
+            self.gsubrIndexBias = 107
+        if len(subrCharStringDict)<33900
+            self.gsubrIndexBias = 1131
 
     #サブルーティンの処理について
     """
@@ -197,7 +205,7 @@ class CFFParser:
         analyzer = CharStringAnalyzer(orders)
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
         #副作用としてself.normalized(G)SubrOrdersDictは更新される。
-        normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.normalizedSubrOrdersDict, self.normalizedGsubrOrdersDict))
+        normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.normalizedSubrOrdersDict, self.normalizedGsubrOrdersDict, self.subrIndexBias, self.gsubrIndexBias))
         #絶対座標を計算する
         normalizedAnalyzer.setAbsoluteCoordinate()
         #グリフの領域を計算し、(minX, minY, maxX, maxY)を表示する
