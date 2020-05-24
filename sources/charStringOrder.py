@@ -47,8 +47,28 @@ class CharStringOrder:
 
         if self.type == CharStringOrderType.callsubr:
             index = self.args[-1] + subrIndexBias
+            if not fdSelectIndex is None:
+                normalizedSubrOrdersSelectedDict = normalizedSubrOrdersDict[fdSelectIndex]
+                #すでに呼び出すsubrがnormalizeされていた場合
+                if index in normalizedSubrOrdersSelectedDict.keys:
+                    normalizedOrders = normalizedSubrOrdersSelectedDict[index]
+                    addArgs = self.args[0:-1]
+                    normalizedOrders[0].args = addArgs + normalizedOrders[0].args
+                    return normalizedOrders
+                #されていない場合
+                else:
+                    pass
+                    
         if self.type == CharStringOrderType.callgsubr:
             index = self.args[-1] + gsubrIndexBias
+            if index in normalizedGsubrOrdersDict.keys:
+                normalizedOrders = normalizedGsubrOrdersDict[index]
+                addArgs = self.args[0:-1]
+                normalizedOrders[0].args = addArgs + normalizedOrders[0].args
+                return normalizedOrders
+            #されていない場合
+            else:
+                pass
 
 
         #新しい引数を入れる配列。

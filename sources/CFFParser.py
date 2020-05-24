@@ -54,7 +54,7 @@ class CFFParser:
                 if not "fdSelectIndex" in child.keys:
                     fdSelectIndexDict[child.attrib["name"]] = ""
                     continue
-                fdSelectIndexDict[child.attrib["name"]] = child.attrib["fdSelectIndex"]
+                fdSelectIndexDict[child.attrib["name"]] = int(child.attrib["fdSelectIndex"])
         self.charStringsDict = charStringsDict
 
         self.normalizedSubrOrdersDict = {}
