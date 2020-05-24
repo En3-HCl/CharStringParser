@@ -42,8 +42,8 @@ class CharStringAnalyzer:
             return (0,0,0,0)
         return (minX, minY, maxX, maxY)
     #全ての描画・移動命令をrmoveto/rlineto/rrcurvetoに直す。そうすると処理がとても楽になって嬉しいと思う。
-    def normalize(self):
+    def normalize(self, normalizedSubrOrdersDict, normalizedGsubrOrdersDict):
         normalizedOrders = []
         for i in range(len(self.orders)):
-            normalizedOrders += self.orders[i].normalize()
+            normalizedOrders += self.orders[i].normalize(normalizedSubrOrdersDict, normalizedGsubrOrdersDict)
         return normalizedOrders

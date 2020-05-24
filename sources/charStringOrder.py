@@ -22,10 +22,13 @@ class CharStringOrder:
         #絶対座標に直した、辿る点を入れる。ハンドルとアンカーは区別せず入れる(暫定)
         self.absolutePositions = []
 
-    def normalize(self):
+    def normalize(self, normalizedSubrOrdersDict, normalizedGsubrOrdersDict):
         """
         args:
-         - None
+         - normalizedSubrOrdersDict
+         - normalizedGsubrOrdersDict
+        side effect:
+         - `normalizedSubrOrdersDict` and `normalizedGsubrOrdersDict` will be added some data
         return:
          - equivalent CharStringOrder expressed by `rmoveto` `rlineto` `rrcurveto`
         """
@@ -197,7 +200,7 @@ class CharStringOrder:
         """
         args:
          - startPosition: absolute (x, y)
-        process:
+        side effect:
          - initialize `absolutePosition`
          return: None
         """

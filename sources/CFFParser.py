@@ -195,13 +195,15 @@ class CFFParser:
         orders = tokensParser.parseTokens()
         #命令を分析するAnalyzerを作成する
         analyzer = CharStringAnalyzer(orders)
-        #標準化された命令列を作成し、それを分析するAnalyzerを作成する
-        normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize())
+        #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
+        #副作用としてself.normalized(G)SubrOrdersDictは更新される。
+        normalizedAnalyzer = CharStringAnalyzer(analyzer.normalize(self.normalizedSubrOrdersDict, self.normalizedGsubrOrdersDict))
         #絶対座標を計算する
         normalizedAnalyzer.setAbsoluteCoordinate()
         #グリフの領域を計算し、(minX, minY, maxX, maxY)を表示する
         bounds = normalizedAnalyzer.glyphBoundCalculator()
         return bounds
+
     def calcGlyphsCubicBounds(self):
     #全てのグリフのboundsを{name: (minX, minY, maxX, maxY)}の形で返す
         dict = {}
@@ -209,6 +211,7 @@ class CFFParser:
             dict[key] = self.calcCubicBounds(key)
         self.glyphBoundsDict = dict
         return dict
+
     def makePath(self,name):
         #nameは拡張子を除いて指定する。拡張子を指定したい場合はCFFParser.extensionに指定する。
         path = f"../results/{name}.{self.extension}"
@@ -227,6 +230,12 @@ class CFFParser:
             file.write(text)
 
     def get_vmtx_and_vhea_table(self):
+        """
+        arg: None
+        side effect:
+         - call calcCubicBounds
+        return: None
+        """
         glyphsCount = len(self.glyphBoundsDict)
         if glyphsCount == 0:
             self.calcCubicBounds()
