@@ -50,14 +50,14 @@ class CharStringOrder:
             if cffData.hasFontDict:
                 normalizedSubrOrdersSelectedDict = cffData.normalizedSubrOrdersDict[cffData.fdSelectIndex]
                 #すでに呼び出すsubrがnormalizeされていた場合
-                if index in normalizedSubrOrdersSelectedDict.keys:
+                if index in normalizedSubrOrdersSelectedDict.keys():
                     normalizedOrders = normalizedSubrOrdersSelectedDict[index]
                     addArgs = self.args[0:-1]
                     normalizedOrders[0].args = addArgs + normalizedOrders[0].args
                     return normalizedOrders
                 #されていない場合
                 else:
-                    if not index in self.cffData.subrCharStringDict[cffData.fdSelectIndex].keys:
+                    if not index in self.cffData.subrCharStringDict[cffData.fdSelectIndex].keys():
                         print("データがありません")
                         return
                     charStringCode = self.cffData.subrCharStringDict[cffData.fdSelectIndex][index]
@@ -82,7 +82,7 @@ class CharStringOrder:
 
         if self.type == CharStringOrderType.callgsubr:
             index = self.args[-1].toNumber() + gsubrIndexBias
-            if index in cffData.normalizedGsubrOrdersDict.keys:
+            if index in cffData.normalizedGsubrOrdersDict.keys():
                 normalizedOrders = cffData.normalizedGsubrOrdersDict[index]
                 addArgs = self.args[0:-1]
                 normalizedOrders[0].args = addArgs + normalizedOrders[0].args
