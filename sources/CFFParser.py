@@ -235,7 +235,7 @@ class CFFParser:
             dict[key] = self.calcCubicBounds(key)
             now = int(100*len(dict)/length)
             if not i == now:
-                print(now,"%")
+                print(now)
                 i = now
         self.cffData.glyphBoundsDict = dict
         return dict
