@@ -184,15 +184,6 @@ class CFFParser:
         elif len(gsubrCharStringDict)<33900:
             self.cffData.gsubrIndexBias = 1131
 
-    #サブルーティンの処理について
-    """
-    CharStringAnalyzerにトークン列をnormalizeさせる際、subrCharStringDictと、
-    それを命令列に変換しnormalizeをかけたものnormalizedSubrOrdersDictを一緒に与える。
-    Analyzerはcallsubrを見つけるとnormalizedSubrOrdersDictに検索をかける。存在していればそれを結合してプロセスする。
-    存在していなければAnalyzerを新たに生成して先にsubrをnormalize。その結果をdictに入れて更新させる。
-    これで全てのsubrは一度のみnormalizeされるので、ロスも生じずsubroutineを特別扱いする必要もない。
-    """
-
     def calcCubicBounds(self,name):
         """
         args:
