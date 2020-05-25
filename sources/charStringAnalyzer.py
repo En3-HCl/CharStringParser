@@ -102,9 +102,10 @@ class CharStringAnalyzer:
         if not order.type in [CharStringOrderType.callsubr, CharStringOrderType.callgsubr]:
             return [order]
         if order.type == CharStringOrderType.callsubr:
-            index = str(int(order.args[-1].toNumber() + cffData.subrIndexBias))
             #print("subr:",index,"from:",order.args[-1].toNumber())
             if cffData.hasFontDict:
+                index = str(int(order.args[-1].toNumber() + cffData.subrIndexBias[fdSelectIndex]))
+
                 expandedSubrOrdersSelectedDict = cffData.expandedSubrOrdersDict[fdSelectIndex]
                 #すでに呼び出すsubrがnormalizeされていた場合
                 if index in expandedSubrOrdersSelectedDict.keys():
@@ -113,7 +114,7 @@ class CharStringAnalyzer:
                 #されていない場合
                 else:
                     if not index in cffData.subrCharStringDict[fdSelectIndex].keys():
-                        print(f"{index}に対応するデータがありません")
+                        print(f"index={fdSelectIndex}のFontDictのindex={index}に対応するデータがありません")
                         return
                     charStringCode = cffData.subrCharStringDict[fdSelectIndex][index]
                     #文字列の状態からトークン列へと変換する
@@ -131,6 +132,8 @@ class CharStringAnalyzer:
                     return expandedOrders
             #FontDictでないタイプの場合
             else:
+                index = str(int(order.args[-1].toNumber() + cffData.subrIndexBias))
+
                 if index in cffData.expandedSubrOrdersDict.keys():
                     expandedOrders = cffData.expandedSubrOrdersDict[index]
                     return expandedOrders

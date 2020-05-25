@@ -70,8 +70,8 @@ class CFFParser:
         self.cffData.expandedGsubrOrdersDict = {}
         self.cffData.fdSelectIndexDict = fdSelectIndexDict
         if self.cffData.hasFontDict:
-            for key in self.cffData.gsubrCharStringDict.keys():
-                self.cffData.expandedGsubrOrdersDict[key] = {}
+            for key in self.cffData.subrCharStringDict.keys():
+                self.cffData.expandedSubrOrdersDict[key] = {}
 
     def getSubrs(self, cffFontXML):
         """
@@ -115,7 +115,17 @@ class CFFParser:
             if self.cffData.hasSubroutine:
                 for child in subrsXML:
                     subrCharStringDict[child.attrib["index"]] = child.text
+
+            self.cffData.subrCharStringDict = subrCharStringDict
+            self.cffData.subrIndexBias = 32768
+            if len(subrCharStringDict)<1240:
+                self.cffData.subrIndexBias = 107
+            elif len(subrCharStringDict)<33900:
+                self.cffData.subrIndexBias = 1131
+            return
         if not FDArrayXML is None:
+            self.cffData.subrIndexBias = {}
+
             self.cffData.hasFontDict = True
             for fontdictXML in FDArrayXML:
                 if not fontdictXML.tag == "FontDict":
@@ -144,13 +154,13 @@ class CFFParser:
                     for child in subrsXML:
                         fdsubrdict[child.attrib["index"]] = child.text
                 subrCharStringDict[fontdictXML.attrib["index"]] = fdsubrdict
+                self.cffData.subrIndexBias[fontdictXML.attrib["index"]] = 32768
+                if len(fdsubrdict)<1240:
+                    self.cffData.subrIndexBias[fontdictXML.attrib["index"]] = 107
+                elif len(fdsubrdict)<33900:
+                    self.cffData.subrIndexBias[fontdictXML.attrib["index"]] = 1131
 
-        self.cffData.subrCharStringDict = subrCharStringDict
-        self.cffData.subrIndexBias = 32768
-        if len(subrCharStringDict)<1240:
-            self.cffData.subrIndexBias = 107
-        elif len(subrCharStringDict)<33900:
-            self.cffData.subrIndexBias = 1131
+            self.cffData.subrCharStringDict = subrCharStringDict
 
 
     def getGlobalSubrs(self, cffXML):
@@ -219,8 +229,14 @@ class CFFParser:
     def calcGlyphsCubicBounds(self):
     #全てのグリフのboundsを{name: (minX, minY, maxX, maxY)}の形で返す
         dict = {}
+        length = len(self.cffData.charStringsDict)
+        i = ""
         for key in self.cffData.charStringsDict.keys():
             dict[key] = self.calcCubicBounds(key)
+            now = int(100*len(dict)/length)
+            if not i == now:
+                print(now+"%")
+                i = now
         self.cffData.glyphBoundsDict = dict
         return dict
 
