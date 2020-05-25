@@ -1,5 +1,6 @@
 from charStringOrder import *
 from charStringOrderType import *
+
 #charstringをパースする
 #流れは
 #1. 文字列を数値と命令のトークンの列に変換する。
@@ -65,6 +66,7 @@ class CharStringParser:
                 return
             identifier = identifier + self.curChar
 ##############################################
+
 class TokenListParser:
     def __init__(self, tokens):
         self.stack = []
@@ -103,40 +105,70 @@ class TokenListParser:
                 continue
             #後置命令のため、stackの数値列を受け取ってオブジェクトとする。
             if self.curToken.isPostfix():
+                if self.curToken in [CharStringOrderType.callsubr,CharStringOrderType.callgsubr]:
+                    stack1 = self.stack[0:-1]
+                    stack2 = [self.stack[-1]]
+                    orders.append(CharStringOrder(CharStringOrderType._stack, stack1))
+                    orders.append(CharStringOrder(self.curToken, stack2))
+                    self.next()
+                    self.stack = []
+                    continue
                 order = CharStringOrder(self.curToken, self.stack)
                 self.stack = []
                 orders.append(order)
                 self.next()
                 continue
             if self.curToken.isUniquefix():
-                #後置命令だが直後のvstemは記述されないため、vstemの分までパースする。
+                #後置命令だが直後のvstemは記述されないため、vstemの分までパースする。→しない
                 if self.curToken == CharStringOrderType.hstemhm:
-                    hstem = CharStringOrder(CharStringOrderType.hstem, self.stack)
+                    hstem = CharStringOrder(CharStringOrderType.hstemhm, self.stack)
+                    self.stack = []
                     orders.append(hstem)
-
+                    self.next()
+                    """
                     self.next()
                     self.parseNumberTokens()
                     vstem = CharStringOrder(CharStringOrderType.vstem, self.stack)
                     orders.append(vstem)
+                    """
                     continue
-                #endchar出てきた場合終了
+                #endcharが出てきた場合終了
                 if self.curToken == CharStringOrderType.endchar:
                     orders.append(CharStringOrder(self.curToken, []))
-                    return orders
+                    break
                 #returnの場合はstackの数値を全てreturnに持たせて終了する。
                 if self.curToken == CharStringOrderType._return:
-                    orders.append(CharStringOrder(self.curToken, self.stack))
-                    return orders
+                    orders.append(CharStringOrder(CharStringOrderType._stack, self.stack))
+                    self.stack = []
+                    break
                 continue
             #前置命令のため、命令が来てから数値列をパースする。
             if self.curToken.isPrefix():
+                #stackが空でなければ、避難させる
+                if not len(self.stack) == 0:
+                    orders.append(CharStringOrder(CharStringOrderType._stack, self.stack))
+                    self.stack = []
                 self.next()
                 self.parseNumberTokens(1)
                 order = CharStringOrder(CharStringOrderType.hintmask, self.stack)
+                self.stack = []
                 orders.append(order)
                 continue
             #次のトークンを呼び出す。
             self.next()
+
+        return orders
+        #hstemhmの後にcallsubrが来るタイプの処理が困難なので、ここで無理やり修正する。ごめん。なんか良い方法考えて……。
+        results = []
+        for i in range(len(orders)):
+            if i == len(orders)-1:
+                results.append(orders[i])
+            if orders[i].type == CharStringOrderType.vstem and orders[i+1].type == CharStringOrderType.callsubr:
+                print("correct")
+                orders[i].args.pop(-1)
+                orders[i+1].args = [orders[i+1].args[-1]]
+            results.append(orders[i])
+        return results
 
     #数値列をstackに格納する。
     def parseNumberTokens(self, count=-1):

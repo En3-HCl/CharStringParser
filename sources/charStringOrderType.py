@@ -1,6 +1,9 @@
 import enum
 
 class CharStringOrderType(enum.Enum):
+    #数値列をstackしておくための命令。仕様には含まれない。
+    _stack = "_stack"
+
     hstem = "hstem"
     vstem = "vstem"
 
