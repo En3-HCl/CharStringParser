@@ -59,7 +59,7 @@ class CFFParser:
         for child in charstringsXML:
             charStringsDict[child.attrib["name"]] = child.text
             if self.cffData.hasFontDict:
-                if not "fdSelectIndex" in child.keys:
+                if not "fdSelectIndex" in child.keys():
                     fdSelectIndexDict[child.attrib["name"]] = ""
                     continue
                 fdSelectIndexDict[child.attrib["name"]] = child.attrib["fdSelectIndex"]
@@ -70,7 +70,7 @@ class CFFParser:
         self.cffData.expandedGsubrOrdersDict = {}
         self.cffData.fdSelectIndexDict = fdSelectIndexDict
         if self.cffData.hasFontDict:
-            for key in self.cffData.gsubrCharStringDict.keys:
+            for key in self.cffData.gsubrCharStringDict.keys():
                 self.cffData.expandedGsubrOrdersDict[key] = {}
 
     def getSubrs(self, cffFontXML):
