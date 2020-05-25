@@ -103,7 +103,7 @@ class CharStringAnalyzer:
             return [order]
         if order.type == CharStringOrderType.callsubr:
             index = str(int(order.args[-1].toNumber() + cffData.subrIndexBias))
-            print("subr:",index,"from:",order.args[-1].toNumber())
+            #print("subr:",index,"from:",order.args[-1].toNumber())
             if cffData.hasFontDict:
                 expandedSubrOrdersSelectedDict = cffData.expandedSubrOrdersDict[fdSelectIndex]
                 #すでに呼び出すsubrがnormalizeされていた場合
@@ -155,13 +155,10 @@ class CharStringAnalyzer:
 
         if order.type == CharStringOrderType.callgsubr:
             index = str(int(order.args[-1].toNumber() + cffData.gsubrIndexBias))
-            print("gsubr:",index,"from:",order.args[-1].toNumber())
+            #print("gsubr:",index,"from:",order.args[-1].toNumber())
             if index in cffData.expandedGsubrOrdersDict.keys():
                 expandedOrders = cffData.expandedGsubrOrdersDict[index]
-                addArgs = order.args[0:-1]
-                print(len(addArgs))
-
-                return [CharStringOrder(expandedOrders[0].type, addArgs + expandedOrders[0].args)] + expandedOrders[1:]
+                return expandedOrders
             else:
                 if not index in cffData.gsubrCharStringDict.keys():
                     print(f"{index}に対応するデータがありません")
@@ -185,7 +182,6 @@ class CharStringAnalyzer:
     def normalize(self):
         normalizedOrders = []
         for i in range(len(self.orders)):
-            print(i,self.orders[i].type)
             normalizedOrders += self.normalizeOrder(self.orders[i])
         return normalizedOrders
 

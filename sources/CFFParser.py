@@ -217,38 +217,6 @@ class CFFParser:
             expandedAnalyzer = CharStringAnalyzer(analyzer.expand(self.cffData, fdSelectIndex = self.cffData.fdSelectIndexDict[name]))
         else:
             expandedAnalyzer = CharStringAnalyzer(analyzer.expand(self.cffData))
-        if name == "uni30C0":
-            print(expandedAnalyzer.orders[0].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[0].args))))
-            print(expandedAnalyzer.orders[1].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[1].args))))
-            print(expandedAnalyzer.orders[2].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[2].args))))
-            print(expandedAnalyzer.orders[3].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[3].args))))
-            print(expandedAnalyzer.orders[4].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[4].args))))
-            print(expandedAnalyzer.orders[5].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[5].args))))
-            print(expandedAnalyzer.orders[6].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[6].args))))
-            print(expandedAnalyzer.orders[7].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[7].args))))
-            print(expandedAnalyzer.orders[8].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[8].args))))
-            print(expandedAnalyzer.orders[9].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[9].args))))
-            print(expandedAnalyzer.orders[10].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[10].args))))
-            print(expandedAnalyzer.orders[11].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[11].args))))
-            print(expandedAnalyzer.orders[12].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[12].args))))
-            print(expandedAnalyzer.orders[13].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[13].args))))
-            print(expandedAnalyzer.orders[14].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[14].args))))
-            print(expandedAnalyzer.orders[15].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[15].args))))
-            print(expandedAnalyzer.orders[16].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[16].args))))
-            print(expandedAnalyzer.orders[17].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[17].args))))
-            print(expandedAnalyzer.orders[18].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[18].args))))
-            print(expandedAnalyzer.orders[19].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[19].args))))
-            print(expandedAnalyzer.orders[20].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[20].args))))
-            print(expandedAnalyzer.orders[21].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[21].args))))
-            print(expandedAnalyzer.orders[22].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[22].args))))
-            print(expandedAnalyzer.orders[23].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[23].args))))
-            print(expandedAnalyzer.orders[24].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[24].args))))
-            print(expandedAnalyzer.orders[25].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[25].args))))
-            print(expandedAnalyzer.orders[26].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[26].args))))
-            print(expandedAnalyzer.orders[27].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[27].args))))
-            print(expandedAnalyzer.orders[28].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[28].args))))
-            print(expandedAnalyzer.orders[29].type, (list(map(lambda x:x.toNumber(), expandedAnalyzer.orders[29].args))))
-
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
         #副作用としてself.normalized(G)SubrOrdersDictは更新される。
         normalizedAnalyzer = CharStringAnalyzer(expandedAnalyzer.normalize())
@@ -261,7 +229,6 @@ class CFFParser:
     #全てのグリフのboundsを{name: (minX, minY, maxX, maxY)}の形で返す
         dict = {}
         for key in self.cffData.charStringsDict.keys():
-            print(key)
             dict[key] = self.calcCubicBounds(key)
         self.cffData.glyphBoundsDict = dict
         return dict

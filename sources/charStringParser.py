@@ -158,17 +158,6 @@ class TokenListParser:
             self.next()
 
         return orders
-        #hstemhmの後にcallsubrが来るタイプの処理が困難なので、ここで無理やり修正する。ごめん。なんか良い方法考えて……。
-        results = []
-        for i in range(len(orders)):
-            if i == len(orders)-1:
-                results.append(orders[i])
-            if orders[i].type == CharStringOrderType.vstem and orders[i+1].type == CharStringOrderType.callsubr:
-                print("correct")
-                orders[i].args.pop(-1)
-                orders[i+1].args = [orders[i+1].args[-1]]
-            results.append(orders[i])
-        return results
 
     #数値列をstackに格納する。
     def parseNumberTokens(self, count=-1):

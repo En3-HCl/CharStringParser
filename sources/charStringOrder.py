@@ -107,8 +107,6 @@ class CharStringOrder:
                 xList += [curveBounds[0], curveBounds[2]]
                 yList += [curveBounds[1], curveBounds[3]]
             self.absolutePositions.pop(-1)                 #消した
-            if len(xList) == 0:
-                print(self.type,len(self.args))
 
             minX, maxX = min(xList), max(xList)
             minY, maxY = min(yList), max(yList)
