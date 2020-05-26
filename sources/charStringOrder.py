@@ -11,7 +11,6 @@ class NumberToken:
 NumberToken.zero = NumberToken("0")
 ##############################################
 
-
 #命令情報をまとめるオブジェクト
 class CharStringOrder:
     def __init__(self, type, args):
@@ -32,6 +31,11 @@ class CharStringOrder:
          - initialize `absolutePosition`
          return: None
         """
+        #初期化する。
+        self.startPosition = (0,0)
+        self.absolutePositions = []
+        self.endPosition = (0,0)
+
         if not (self.type.isDrawOrder() or self.type.isMoveOrder()):
             return
         #始点を決定する。

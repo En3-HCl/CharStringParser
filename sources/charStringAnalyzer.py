@@ -8,10 +8,6 @@ class CharStringAnalyzer:
     def __init__(self, orders):
         self.orders = orders    #CharStringOrderのリスト
 
-    def yMaxCalculator(self):
-        hstem = list(filter(lambda x:x.type == OrderType.hstem, self.orders))[0]
-        return self.ascender-max(hstem.value)
-
     def setAbsoluteCoordinate(self):
         curPosition = (0,0)
         for order in self.orders:
@@ -51,9 +47,11 @@ class CharStringAnalyzer:
         summary:
          - remove `callsubr` and `callgsubr` orders
         """
+
+
         expandedOrders = []
         for i in range(len(self.orders)):
-            expandedOrders += self.expandOrder(self.orders[i], cffData, fdSelectIndex)
+            expandedOrders = expandedOrders+self.expandOrder(self.orders[i], cffData, fdSelectIndex)
 
 
         unitestackOrders = []
@@ -65,6 +63,7 @@ class CharStringAnalyzer:
                 expandedOrders[i+1] = CharStringOrder(CharStringOrderType._stack, expandedOrders[i].args + expandedOrders[i+1].args)
                 continue
             unitestackOrders.append(expandedOrders[i])
+
 
         if subrFlag:
             return unitestackOrders
@@ -97,20 +96,18 @@ class CharStringAnalyzer:
          - cffData
          - fdSelectIndex: if needed
         return:
-         - [CharStringOrder] without callsubr
+         - [CharStringOrder] without call(g)subr
         """
         if not order.type in [CharStringOrderType.callsubr, CharStringOrderType.callgsubr]:
             return [order]
         if order.type == CharStringOrderType.callsubr:
-            #print("subr:",index,"from:",order.args[-1].toNumber())
             if cffData.hasFontDict:
                 index = str(int(order.args[-1].toNumber() + cffData.subrIndexBias[fdSelectIndex]))
+            #    print("subr:",index,"from:",order.args[-1].toNumber())
 
-                expandedSubrOrdersSelectedDict = cffData.expandedSubrOrdersDict[fdSelectIndex]
-                #すでに呼び出すsubrがnormalizeされていた場合
-                if index in expandedSubrOrdersSelectedDict.keys():
-                    expandedOrders = expandedSubrOrdersSelectedDict[index]
-                    return expandedOrders
+                #すでに呼び出すsubrがexpandされていた場合
+                if index in cffData.expandedSubrOrdersDict[fdSelectIndex].keys():
+                    return cffData.expandedSubrOrdersDict[fdSelectIndex][index]
                 #されていない場合
                 else:
                     if not index in cffData.subrCharStringDict[fdSelectIndex].keys():
@@ -135,8 +132,7 @@ class CharStringAnalyzer:
                 index = str(int(order.args[-1].toNumber() + cffData.subrIndexBias))
 
                 if index in cffData.expandedSubrOrdersDict.keys():
-                    expandedOrders = cffData.expandedSubrOrdersDict[index]
-                    return expandedOrders
+                    return cffData.expandedSubrOrdersDict[index]
                 else:
                     if not index in cffData.subrCharStringDict.keys():
                         print(f"{index}に対応するデータがありません")
@@ -160,8 +156,7 @@ class CharStringAnalyzer:
             index = str(int(order.args[-1].toNumber() + cffData.gsubrIndexBias))
             #print("gsubr:",index,"from:",order.args[-1].toNumber())
             if index in cffData.expandedGsubrOrdersDict.keys():
-                expandedOrders = cffData.expandedGsubrOrdersDict[index]
-                return expandedOrders
+                return cffData.expandedGsubrOrdersDict[index]
             else:
                 if not index in cffData.gsubrCharStringDict.keys():
                     print(f"{index}に対応するデータがありません")
@@ -180,22 +175,18 @@ class CharStringAnalyzer:
                 expandedOrders = analyzer.expand(cffData, subrFlag = True)
                 cffData.expandedGsubrOrdersDict[index] = expandedOrders
                 return expandedOrders
-
     #全ての描画・移動命令をrmoveto/rlineto/rrcurvetoに直す。そうすると処理がとても楽になって嬉しいと思う。
     def normalize(self):
         normalizedOrders = []
         for i in range(len(self.orders)):
             normalizedOrders += self.normalizeOrder(self.orders[i])
+
         return normalizedOrders
 
     def normalizeOrder(self, order):
         """
         args:
          - order
-         - cffData
-         - fdSelectIndex: if needed
-        side effect:
-         - `cffData.normalizedSubrOrdersDict` and `cffData.normalizedGsubrOrdersDict` will be added some data
         return:
          - equivalent CharStringOrder expressed by `rmoveto` `rlineto` `rrcurveto`
         """
@@ -212,26 +203,26 @@ class CharStringAnalyzer:
 
         #新しい引数を入れる配列。
         newArgs = []
+        #argsに手を加えたいので、加える前にコピーを取って作業する。
+        _args = list(map(lambda x: x, order.args))
 
         if order.type == CharStringOrderType.hlineto:
             #引数の個数とは無関係に、偶数番がdx、奇数番がdyである。
-            for i in range(len(order.args)):
+            for i in range(len(_args)):
                 if i%2 == 0:
-                    newArgs += [order.args[i], NumberToken.zero]
+                    newArgs += [_args[i], NumberToken.zero]
                 if i%2 == 1:
-                    newArgs += [NumberToken.zero, order.args[i]]
+                    newArgs += [NumberToken.zero, _args[i]]
             return [CharStringOrder(CharStringOrderType.rlineto, newArgs)]
         if order.type == CharStringOrderType.vlineto:
             #引数の個数とは無関係に、偶数番がdx、奇数番がdyである。
-            for i in range(len(order.args)):
+            for i in range(len(_args)):
                 if i%2 == 1:
-                    newArgs += [order.args[i], NumberToken.zero]
+                    newArgs += [_args[i], NumberToken.zero]
                 if i%2 == 0:
-                    newArgs += [NumberToken.zero, order.args[i]]
+                    newArgs += [NumberToken.zero, _args[i]]
             return [CharStringOrder(CharStringOrderType.rlineto, newArgs)]
 
-        #argsに手を加えたいので、加える前にコピーを取って作業する。
-        _args = list(map(lambda x: x, order.args))
 
         if order.type == CharStringOrderType.hhcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
@@ -268,97 +259,97 @@ class CharStringAnalyzer:
         if order.type == CharStringOrderType.hvcurveto:
             #引数の個数は4+8*n+1? または 8*n+1?である。引数はdx dx dy dy dy dx dy dxを並べたものになるので、それを考慮して処理を簡略化する。
             #4項ずつ見た場合、偶数番目の4項はdx dx dy dy、奇数番目の4項はdy dx dy dxである。
-            for i in range(int((len(order.args)-len(order.args)%4)/4)):
+            for i in range(int((len(_args)-len(_args)%4)/4)):
                 #偶数番目の4項：dx dx dy dy
                 if i%2 == 0:
-                    handle1dx, handle1dy = order.args[4*i], NumberToken.zero
-                    handle2dx, handle2dy = order.args[4*i+1], order.args[4*i+2]
-                    anchorDx, anchorDy = NumberToken.zero, order.args[4*i+3]
+                    handle1dx, handle1dy = _args[4*i], NumberToken.zero
+                    handle2dx, handle2dy = _args[4*i+1], _args[4*i+2]
+                    anchorDx, anchorDy = NumberToken.zero, _args[4*i+3]
                     newArgs += [handle1dx, handle1dy] + [handle2dx, handle2dy] + [anchorDx, anchorDy]
                 #奇数番目の4項：dy dx dy dx
                 if i%2 == 1:
-                    handle1dx, handle1dy = NumberToken.zero, order.args[4*i]
-                    handle2dx, handle2dy = order.args[4*i+1], order.args[4*i+2]
-                    anchorDx, anchorDy = order.args[4*i+3], NumberToken.zero
+                    handle1dx, handle1dy = NumberToken.zero, _args[4*i]
+                    handle2dx, handle2dy = _args[4*i+1], _args[4*i+2]
+                    anchorDx, anchorDy = _args[4*i+3], NumberToken.zero
                     newArgs += [handle1dx, handle1dy] + [handle2dx, handle2dy] + [anchorDx, anchorDy]
-            if len(order.args)%8 == 1:
+            if len(_args)%8 == 1:
                 #このとき最後の1項dyが存在する。
-                newArgs[-1] = order.args[-1]
-            if len(order.args)%8 == 5:
+                newArgs[-1] = _args[-1]
+            if len(_args)%8 == 5:
                 #このとき最後の1項dxが存在する。
-                newArgs[-2] = order.args[-1]
+                newArgs[-2] = _args[-1]
             return [CharStringOrder(CharStringOrderType.rrcurveto, newArgs)]
 
         if order.type == CharStringOrderType.vhcurveto:
             #引数の個数は4+8*n+1? または 8*n+1?である。引数はdx dx dy dy dy dx dy dxを並べたものになるので、それを考慮して処理を簡略化する。
             #4項ずつ見た場合、偶数番目の4項はdx dx dy dy、奇数番目の4項はdy dx dy dxである。
-            for i in range(int((len(order.args)-len(order.args)%4)/4)):
+            for i in range(int((len(_args)-len(_args)%4)/4)):
                 #奇数番目の4項：dx dx dy dy
                 if i%2 == 1:
-                    handle1dx, handle1dy = order.args[4*i], NumberToken.zero
-                    handle2dx, handle2dy = order.args[4*i+1], order.args[4*i+2]
-                    anchorDx, anchorDy = NumberToken.zero, order.args[4*i+3]
+                    handle1dx, handle1dy = _args[4*i], NumberToken.zero
+                    handle2dx, handle2dy = _args[4*i+1], _args[4*i+2]
+                    anchorDx, anchorDy = NumberToken.zero, _args[4*i+3]
                     newArgs += [handle1dx, handle1dy] + [handle2dx, handle2dy] + [anchorDx, anchorDy]
                 #偶数番目の4項：dy dx dy dx
                 if i%2 == 0:
-                    handle1dx, handle1dy = NumberToken.zero, order.args[4*i]
-                    handle2dx, handle2dy = order.args[4*i+1], order.args[4*i+2]
-                    anchorDx, anchorDy = order.args[4*i+3], NumberToken.zero
+                    handle1dx, handle1dy = NumberToken.zero, _args[4*i]
+                    handle2dx, handle2dy = _args[4*i+1], _args[4*i+2]
+                    anchorDx, anchorDy = _args[4*i+3], NumberToken.zero
                     newArgs += [handle1dx, handle1dy] + [handle2dx, handle2dy] + [anchorDx, anchorDy]
-            if len(order.args)%8 == 5:
+            if len(_args)%8 == 5:
                 #このとき最後の1項dyが存在する。
-                newArgs[-1] = order.args[-1]
-            if len(order.args)%8 == 1:
+                newArgs[-1] = _args[-1]
+            if len(_args)%8 == 1:
                 #このとき最後の1項dxが存在する。
-                newArgs[-2] = order.args[-1]
+                newArgs[-2] = _args[-1]
             return [CharStringOrder(CharStringOrderType.rrcurveto, newArgs)]
         if order.type == CharStringOrderType.rcurveline:
             #rcurvelineはrrcurvetoとrlinetoの合成に等しいというので、教え通りに処理する。
-            linetoArgs = order.args[-2:]
+            linetoArgs = _args[-2:]
             orders = []
             #最後の2つを無視して6個ずつ見る。
-            for i in range(int((len(order.args)-2)/6)):
-                args = order.args[6*i:6*i+6]
+            for i in range(int((len(_args)-2)/6)):
+                args = _args[6*i:6*i+6]
                 newOrder = CharStringOrder(CharStringOrderType.rrcurveto, args)
                 orders.append(newOrder)
             orders.append(CharStringOrder(CharStringOrderType.rlineto, linetoArgs))
             return orders
         if order.type == CharStringOrderType.rlinecurve:
             #rcurvelineはrlinetoとrrcurvelineの合成に等しいというので、教え通りに処理する。
-            curvetoArgs = order.args[-6:]
+            curvetoArgs = _args[-6:]
             orders = []
             #最後の6つを無視して2個ずつ見る。
-            for i in range(int((len(order.args)-6)/2)):
-                args = order.args[2*i:2*i+2]
+            for i in range(int((len(_args)-6)/2)):
+                args = _args[2*i:2*i+2]
                 newOrder = CharStringOrder(CharStringOrderType.rlineto, args)
                 orders.append(newOrder)
             orders.append(CharStringOrder(CharStringOrderType.rrcurveto, curvetoArgs))
             return orders
         if order.type == CharStringOrderType.flex:
-            args = order.args[0:12]
+            args = _args[0:12]
             return [CharStringOrder(CharStringOrderType.rrcurveto, args)]
         if order.type == CharStringOrderType.flex1:
-            dx1, dy1 = order.args[0].toNumber(), order.args[1].toNumber()
-            dx2, dy2 = order.args[2].toNumber(), order.args[3].toNumber()
-            dx3, dy3 = order.args[4].toNumber(), order.args[5].toNumber()
-            dx4, dy4 = order.args[6].toNumber(), order.args[7].toNumber()
-            dx5, dy5 = order.args[8].toNumber(), order.args[9].toNumber()
+            dx1, dy1 = _args[0].toNumber(), _args[1].toNumber()
+            dx2, dy2 = _args[2].toNumber(), _args[3].toNumber()
+            dx3, dy3 = _args[4].toNumber(), _args[5].toNumber()
+            dx4, dy4 = _args[6].toNumber(), _args[7].toNumber()
+            dx5, dy5 = _args[8].toNumber(), _args[9].toNumber()
 
             xSum, ySum = abs(dx1+dx2+dx3+dx4+dx5), abs(dy1+dy2+dy3+dy4+dy5)
 
             args = []
             if xSum <= ySum:
-                args = order.args[0:10] + [NumberToken(str(-xSum)), order.args[10]]
+                args = _args[0:10] + [NumberToken(str(-xSum)), _args[10]]
             else:
-                args = order.args[0:10] + [order.args[10], NumberToken(str(-ySum))]
+                args = _args[0:10] + [_args[10], NumberToken(str(-ySum))]
             return [CharStringOrder(CharStringOrderType.rrcurveto, args)]
         if order.type == CharStringOrderType.hflex:
             #  dx1 0 dx2 dy2 dx3 0 dx4 0 dx5 dy2 dx6 50 flex
             #= dx1 0 dx2 dy2 dx3 0 dx4 0 dx5 dy2 dx6 rrcurveto
-            args = [order.args[0], NumberToken.zero, order.args[1], order.args[2], order.args[3], NumberToken.zero, order.args[4], NumberToken.zero, order.args[5], order.args[2], order.args[6], NumberToken.zero]
+            args = [_args[0], NumberToken.zero, _args[1], _args[2], _args[3], NumberToken.zero, _args[4], NumberToken.zero, _args[5], _args[2], _args[6], NumberToken.zero]
             return [CharStringOrder(CharStringOrderType.rrcurveto, args)]
         if order.type == CharStringOrderType.hflex1:
             #dx1 dy1 dx2 dy2 dx3 0 dx4 0 dx5 dy5 dx6 {-(dy1+dy2+dy5)} rrcurveto
-            dy6 = NumberToken(str(-(order.args[1].toNumber() + order.args[3].toNumber() + order.args[7].toNumber())))
-            args = [order.args[0], order.args[1], order.args[2], order.args[3], order.args[4], NumberToken.zero, order.args[5], NumberToken.zero, order.args[6], order.args[7], order.args[8], dy6]
+            dy6 = NumberToken(str(-(_args[1].toNumber() + _args[3].toNumber() + _args[7].toNumber())))
+            args = [_args[0], _args[1], _args[2], _args[3], _args[4], NumberToken.zero, _args[5], NumberToken.zero, _args[6], _args[7], _args[8], dy6]
             return [CharStringOrder(CharStringOrderType.rrcurveto, args)]

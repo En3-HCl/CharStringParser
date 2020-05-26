@@ -8,8 +8,6 @@ class CFFData:
     def __init__(self):
         pass
 
-
-
 class CFFParser:
     def __init__(self, path):
         #初期化
@@ -220,10 +218,23 @@ class CFFParser:
             expandedAnalyzer = CharStringAnalyzer(analyzer.expand(self.cffData))
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
         #副作用としてself.normalized(G)SubrOrdersDictは更新される。
+
+
         normalizedAnalyzer = CharStringAnalyzer(expandedAnalyzer.normalize())
+
+#        print("normalizedOrders1:",list(map(lambda x:list(map(lambda y:y,x.absolutePositions)), normalizedAnalyzer.orders)))
+
+
         normalizedAnalyzer.setAbsoluteCoordinate()
+
+#        print("normalizedOrders2:",list(map(lambda x:list(map(lambda y:y,x.absolutePositions)), normalizedAnalyzer.orders)))
+
+
         #グリフの領域を計算し、(minX, minY, maxX, maxY)を表示する
         bounds = normalizedAnalyzer.glyphBoundCalculator()
+
+#        print("normalizedOrders3:",list(map(lambda x:list(map(lambda y:y,x.absolutePositions)), normalizedAnalyzer.orders)))
+
         return bounds
 
     def calcGlyphsCubicBounds(self):
