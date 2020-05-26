@@ -103,7 +103,7 @@ class CharStringAnalyzer:
         if order.type == CharStringOrderType.callsubr:
             if cffData.hasFontDict:
                 index = str(int(order.args[-1].toNumber() + cffData.subrIndexBias[fdSelectIndex]))
-            #    print("subr:",index,"from:",order.args[-1].toNumber())
+                print("subr:",index,"from:",order.args[-1].toNumber())
 
                 #すでに呼び出すsubrがexpandされていた場合
                 if index in cffData.expandedSubrOrdersDict[fdSelectIndex].keys():
@@ -154,7 +154,7 @@ class CharStringAnalyzer:
 
         if order.type == CharStringOrderType.callgsubr:
             index = str(int(order.args[-1].toNumber() + cffData.gsubrIndexBias))
-            #print("gsubr:",index,"from:",order.args[-1].toNumber())
+            print("gsubr:",index,"from:",order.args[-1].toNumber())
             if index in cffData.expandedGsubrOrdersDict.keys():
                 return cffData.expandedGsubrOrdersDict[index]
             else:
@@ -194,7 +194,7 @@ class CharStringAnalyzer:
             return []
         #内容をrmoveto, rlineto, rrcurvetoのみで表した形の命令列に変換したものを返す。
         if order.type in [CharStringOrderType.rmoveto, CharStringOrderType.rlineto, CharStringOrderType.rrcurveto]:
-            return [order]
+            return [CharStringOrder(order.type, order.args)]
 
         if order.type == CharStringOrderType.hmoveto:
             return [CharStringOrder(CharStringOrderType.rmoveto, order.args+[NumberToken.zero])]
@@ -226,6 +226,7 @@ class CharStringAnalyzer:
 
         if order.type == CharStringOrderType.hhcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
+            #- dy1? {dxa dxb dyb dxc}+
             handle1dy = NumberToken.zero
             if len(_args)%4 == 1:
                 handle1dy = _args[0]
@@ -239,9 +240,11 @@ class CharStringAnalyzer:
 
                 if not handle1dy == NumberToken.zero:
                     handle1dy = NumberToken.zero
+
             return [CharStringOrder(CharStringOrderType.rrcurveto, newArgs)]
         if order.type == CharStringOrderType.vvcurveto:
             #引数は4個を1セットで読む。実際の処理としてはこのように実装するのは冗長だが、後の変更を考慮しこのように実装した。
+            #- dx1? {dya dxb dyb dyc}+
             handle1dx = NumberToken.zero
             if len(_args)%4 == 1:
                 handle1dx = _args[0]
@@ -255,6 +258,7 @@ class CharStringAnalyzer:
 
                 if not handle1dx == NumberToken.zero:
                     handle1dx = NumberToken.zero
+
             return [CharStringOrder(CharStringOrderType.rrcurveto, newArgs)]
         if order.type == CharStringOrderType.hvcurveto:
             #引数の個数は4+8*n+1? または 8*n+1?である。引数はdx dx dy dy dy dx dy dxを並べたものになるので、それを考慮して処理を簡略化する。
@@ -281,8 +285,9 @@ class CharStringAnalyzer:
             return [CharStringOrder(CharStringOrderType.rrcurveto, newArgs)]
 
         if order.type == CharStringOrderType.vhcurveto:
-            #引数の個数は4+8*n+1? または 8*n+1?である。引数はdx dx dy dy dy dx dy dxを並べたものになるので、それを考慮して処理を簡略化する。
-            #4項ずつ見た場合、偶数番目の4項はdx dx dy dy、奇数番目の4項はdy dx dy dxである。
+            #  dy1 dx2 dy2 dx3 {dxa dxb dyb dyc   dyd dxe dye dxf}* dyf?
+            #→ (0 dy1 dx2 dy2 dx3 0)(dxa 0 dxb dyb 0 dyc)(0 dyd dxe dye dxf 0)
+            # {dya dxb dyb dxc  dxd dxe dye dyf}+ dxf?
             for i in range(int((len(_args)-len(_args)%4)/4)):
                 #奇数番目の4項：dx dx dy dy
                 if i%2 == 1:
