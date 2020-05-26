@@ -103,7 +103,7 @@ class CharStringAnalyzer:
         if order.type == CharStringOrderType.callsubr:
             if cffData.hasFontDict:
                 index = str(int(order.args[-1].toNumber() + cffData.subrIndexBias[fdSelectIndex]))
-                print("subr:",index,"from:",order.args[-1].toNumber())
+                #print("subr:",index,"from:",order.args[-1].toNumber())
 
                 #すでに呼び出すsubrがexpandされていた場合
                 if index in cffData.expandedSubrOrdersDict[fdSelectIndex].keys():
@@ -154,7 +154,7 @@ class CharStringAnalyzer:
 
         if order.type == CharStringOrderType.callgsubr:
             index = str(int(order.args[-1].toNumber() + cffData.gsubrIndexBias))
-            print("gsubr:",index,"from:",order.args[-1].toNumber())
+            #print("gsubr:",index,"from:",order.args[-1].toNumber())
             if index in cffData.expandedGsubrOrdersDict.keys():
                 return cffData.expandedGsubrOrdersDict[index]
             else:
