@@ -192,6 +192,39 @@ class CFFParser:
         elif len(gsubrCharStringDict)<33900:
             self.cffData.gsubrIndexBias = 1131
 
+    def getSGE_A(self,name):
+        """
+        summary:
+         - get list of arguments that is expressed only with Bezier curve.
+         - lines are converted into Bezier curve (handle1 = start position, handle2 = end position)
+        return:
+         - [(startx, starty, handle1x, handle1y, handle2x, handle2y, endx, endy)] - I call it "SGE-A (Standardized Glyph Expression - Absolutive)"
+        """
+        if not name in self.cffData.charStringsDict.keys():
+            print(f"{name}に対応するデータがありません")
+            return
+        charStringCode = self.cffData.charStringsDict[name]
+        #文字列の状態からトークン列へと変換する
+        strParser = CharStringParser(charStringCode)
+        tokens = strParser.parseString()
+        #トークン列から命令列へと変換する
+        tokensParser = TokenListParser(tokens)
+        orders = tokensParser.parseTokens()
+        #命令を分析するAnalyzerを作成する
+        analyzer = CharStringAnalyzer(orders)
+        #展開された命令列とそれを分析するAnalyzer
+        if self.cffData.hasFontDict:
+            expandedAnalyzer = CharStringAnalyzer(analyzer.expand(self.cffData, fdSelectIndex = self.cffData.fdSelectIndexDict[name]))
+        else:
+            expandedAnalyzer = CharStringAnalyzer(analyzer.expand(self.cffData))
+        #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
+        #副作用としてself.normalized(G)SubrOrdersDictは更新される。
+        normalizedAnalyzer = CharStringAnalyzer(expandedAnalyzer.normalize())
+        normalizedAnalyzer.setAbsoluteCoordinate()
+        sge_a = normalizedAnalyzer.getSGE_A()
+        return sge_a
+
+
     def calcCubicBounds(self,name):
         """
         args:
@@ -218,23 +251,10 @@ class CFFParser:
             expandedAnalyzer = CharStringAnalyzer(analyzer.expand(self.cffData))
         #標準化された命令列を作成し、それを分析するAnalyzerを作成する。
         #副作用としてself.normalized(G)SubrOrdersDictは更新される。
-
-
         normalizedAnalyzer = CharStringAnalyzer(expandedAnalyzer.normalize())
-
-#        print("normalizedOrders1:",list(map(lambda x:list(map(lambda y:y,x.absolutePositions)), normalizedAnalyzer.orders)))
-
-
         normalizedAnalyzer.setAbsoluteCoordinate()
-
-#        print("normalizedOrders2:",list(map(lambda x:list(map(lambda y:y,x.absolutePositions)), normalizedAnalyzer.orders)))
-
-
         #グリフの領域を計算し、(minX, minY, maxX, maxY)を表示する
         bounds = normalizedAnalyzer.glyphBoundCalculator()
-
-#        print("normalizedOrders3:",list(map(lambda x:list(map(lambda y:y,x.absolutePositions)), normalizedAnalyzer.orders)))
-
         return bounds
 
     def calcGlyphsCubicBounds(self):

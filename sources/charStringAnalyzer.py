@@ -2,8 +2,6 @@ from charStringParser import *
 from charStringOrder import *
 
 class CharStringAnalyzer:
-    #飛翔フォントにおける定数
-    ascender = 880
 
     def __init__(self, orders):
         self.orders = orders    #CharStringOrderのリスト
@@ -19,6 +17,42 @@ class CharStringAnalyzer:
                 order.setAbsolutePosition(curPosition)
                 curPosition = order.endPosition
                 continue
+
+    def getSGE_A(self):
+        """
+        require:
+         - call after set setAbsolutePosition
+        """
+        results = []
+        print(self.orders)
+        for order in self.orders:
+            if order.type == CharStringOrderType.rlineto:
+                _backup = order.absolutePositions
+                order.absolutePositions = [order.startPosition] + order.absolutePositions + [order.startPosition]   #再代入なので大丈夫
+                list = []
+                print(order.absolutePositions)
+                print(len(order.absolutePositions))
+                for i in range(len(order.absolutePositions)-1):
+                    anchor1 = order.absolutePositions[i]
+                    handle1 = order.absolutePositions[i]
+                    handle2 = order.absolutePositions[i+1]
+                    anchor2 = order.absolutePositions[i+1]
+                    list += (anchor1, handle1, handle2, anchor2)
+                order.absolutePositions = _backup               #消した
+                results += list
+
+            if order.type == CharStringOrderType.rrcurveto:
+                order.absolutePositions += [order.startPosition] #一時的に末尾に追加するが、のちに消す。この位置にあると都合がいい。
+                list = []
+                for i in range(int(len(order.absolutePositions)/3)):
+                    anchor1 = order.absolutePositions[3*i-1]
+                    handle1 = order.absolutePositions[3*i]
+                    handle2 = order.absolutePositions[3*i+1]
+                    anchor2 = order.absolutePositions[3*i+2]
+                    list += (anchor1, handle1, handle2, anchor2)
+                order.absolutePositions.pop(-1)                 #消した
+                results += list
+        return results
 
     def glyphBoundCalculator(self):
         #!!!必ずsetAbsoluteCoordinateを呼び出してから利用すること!!!

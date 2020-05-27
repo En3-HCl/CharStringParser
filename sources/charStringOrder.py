@@ -20,7 +20,7 @@ class CharStringOrder:
         self.startPosition = (0,0)
         #終点(あとでセットする)
         self.endPosition = (0,0)
-        #絶対座標に直した、辿る点を入れる。ハンドルとアンカーは区別せず入れる(暫定)
+        #絶対座標に直した、辿る点を入れる。
         self.absolutePositions = []
 
     def setAbsolutePosition(self, startPosition):
@@ -115,3 +115,4 @@ class CharStringOrder:
             minX, maxX = min(xList), max(xList)
             minY, maxY = min(yList), max(yList)
             return (minX, minY, maxX, maxY)
+#################################################################################
