@@ -24,14 +24,24 @@ class CharStringAnalyzer:
          - call after set setAbsolutePosition
         """
         results = []
-        print(self.orders)
+        curList = []
+        curStartPosition = []
         for order in self.orders:
+            if len(curList) == 0:
+                curStartPosition = order.startPosition
+            if  order.type == CharStringOrderType.rmoveto:
+                if len(curList) == 0:
+                    continue
+                lastLineA = [curList[-1][-2], curList[-1][-1]]
+                lastLineB = curStartPosition
+                curList += (lastLineA, lastLineA, lastLineB, lastLineB)
+                results += curList
+                curList = []
+                continue
             if order.type == CharStringOrderType.rlineto:
                 _backup = order.absolutePositions
-                order.absolutePositions = [order.startPosition] + order.absolutePositions + [order.startPosition]   #再代入なので大丈夫
+                order.absolutePositions = [order.startPosition] + order.absolutePositions   #再代入なので大丈夫
                 list = []
-                print(order.absolutePositions)
-                print(len(order.absolutePositions))
                 for i in range(len(order.absolutePositions)-1):
                     anchor1 = order.absolutePositions[i]
                     handle1 = order.absolutePositions[i]
@@ -39,8 +49,7 @@ class CharStringAnalyzer:
                     anchor2 = order.absolutePositions[i+1]
                     list += (anchor1, handle1, handle2, anchor2)
                 order.absolutePositions = _backup               #消した
-                results += list
-
+                curList += list
             if order.type == CharStringOrderType.rrcurveto:
                 order.absolutePositions += [order.startPosition] #一時的に末尾に追加するが、のちに消す。この位置にあると都合がいい。
                 list = []
@@ -51,7 +60,14 @@ class CharStringAnalyzer:
                     anchor2 = order.absolutePositions[3*i+2]
                     list += (anchor1, handle1, handle2, anchor2)
                 order.absolutePositions.pop(-1)                 #消した
-                results += list
+                curList += list
+        if not len(curList) == 0:
+            lastLineA = [curList[-1][-2], curList[-1][-1]]
+            lastLineB = curStartPosition
+            curList += (lastLineA, lastLineA, lastLineB, lastLineB)
+            results += curList
+            curList = []
+
         return results
 
     def glyphBoundCalculator(self):
